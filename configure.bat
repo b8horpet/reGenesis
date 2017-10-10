@@ -1,1 +1,1 @@
-cmake -B./build -H./src
+cmake -B./build -H./src -A x64

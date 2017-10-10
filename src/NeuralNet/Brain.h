@@ -50,6 +50,47 @@ public:
 			throw "wtf?";
 		}
 	}
+	void FillSynapsisGraph()
+	{
+/*
+        l=len(self.HiddenLayers)
+        if l>0:
+            for i in self.InputLayer.Neurons:
+                for o in self.HiddenLayers[0].Neurons:
+                    Synapsis(i,o,random.uniform(-1,1))
+            for h in range(0,l-1):
+                for i in self.HiddenLayers[h].Neurons:
+                    for o in self.HiddenLayers[h+1].Neurons:
+                        Synapsis(i,o,random.uniform(-1,1))
+            for i in self.HiddenLayers[l-1].Neurons:
+                for o in self.OutputLayer.Neurons:
+                    Synapsis(i,o,random.uniform(-1,1))
+        else:
+            for i in self.InputLayer.Neurons:
+                for o in self.OutputLayer.Neurons:
+                    Synapsis(i,o,random.uniform(-1,1))
+*/
+		int l = mHiddenLayers.size();
+		if (l > 0)
+		{
+			for (auto i : mInputLayer.mNeurons)
+				for (auto o : mHiddenLayers[0].mNeurons)
+					new NeuronBase::Synapsis(i, o); // output owns the synapsys
+			for( int h=0; h<l-1; ++h)
+				for (auto i : mHiddenLayers[h].mNeurons)
+					for (auto o : mHiddenLayers[h+1].mNeurons)
+						new NeuronBase::Synapsis(i, o); // output owns the synapsys
+			for (auto i : mHiddenLayers[l-1].mNeurons)
+				for (auto o : mOutputLayer.mNeurons)
+					new NeuronBase::Synapsis(i, o); // output owns the synapsys
+		}
+		else
+		{
+			for (auto i : mInputLayer.mNeurons)
+				for (auto o : mOutputLayer.mNeurons)
+					new NeuronBase::Synapsis(i, o); // output owns the synapsys
+		}
+	}
 	virtual void Activate() override
 	{
 		mInputLayer.Activate();

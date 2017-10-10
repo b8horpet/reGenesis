@@ -4,6 +4,7 @@
 
 #include "Common.h"
 #include <vector>
+#include <functional>
 
 class NeuronBase : public INeuralObject
 {
@@ -18,28 +19,35 @@ public:
 			: From(from)
 			, To(to)
 			, mWeight(weight)
-			, mCurrent(0)
+			, mCurrent(0.0)
+			, mEPS(0.0)
 		{
-			To->AddInput(std::static_pointer_cast<NeuronBase::Synapsis>(shared_from_this()));
+			//To->AddInput(std::static_pointer_cast<NeuronBase::Synapsis>(shared_from_this()));
+			To->AddInput(std::shared_ptr<NeuronBase::Synapsis>(this)); // bloergh, we're inside of a new, will crash on stack?
 		}
 		std::shared_ptr<NeuronBase> From;
 		std::shared_ptr<NeuronBase> To;
 		double mWeight;
 		double mCurrent;
+		double mEPS;
 		virtual void Activate() override
 		{
 			mCurrent=From->mOutput;
 		}
 		virtual void Propagate() override
 		{
-			//todo
+			From->mEPS += mEPS * mWeight;
+			mWeight += INeuralObject::Braveness * mEPS * mCurrent;
+			mEPS = 0.0;
 		}
 	};
 
 	double mOutput;
+	double mEPS;
 
 	NeuronBase()
 		: mOutput(0.0)
+		, mEPS(0.0)
 	{}
 
 	virtual void AddInput(std::shared_ptr<NeuronBase::Synapsis> s) = 0;
@@ -57,15 +65,15 @@ public:
 
 class InputNeuron : public NeuronBase
 {
-	std::shared_ptr<double> mInput;
+	std::function<double()> mInput;
 public:
-	InputNeuron(std::shared_ptr<double> v)
+	InputNeuron(std::function<double()> f)
 		: NeuronBase()
-		, mInput(v)
+		, mInput(f)
 	{}
 	virtual void Activate() override
 	{
-		mOutput=*mInput;
+		mOutput=mInput();
 	}
 	virtual void Propagate() override {}
 	virtual void AddInput(std::shared_ptr<NeuronBase::Synapsis>) override {}
@@ -76,12 +84,10 @@ class Neuron : public NeuronBase
 public:
 	std::vector<std::shared_ptr<NeuronBase::Synapsis>> mInputs;
 	double mSum;
-	double mEPS;
 	std::shared_ptr<IFunctionObject> mTransferFilter;
 	Neuron()
 		: NeuronBase()
 		, mSum(0.0)
-		, mEPS(0.0)
 		, mTransferFilter(std::make_shared<TangentHyperbolicFunc>())
 	{
 	}
@@ -100,7 +106,14 @@ public:
 
 	virtual void Propagate() override
 	{
-		//todo
+		auto dtf = mTransferFilter->Differentiate();
+		// if dtf is null intentionally crash
+		for (auto i : mInputs)
+		{
+			i->mEPS = mEPS * (*dtf)(mSum);
+			i->Propagate();
+		}
+		mEPS = 0.0;
 	}
 
 	virtual void AddInput(std::shared_ptr<NeuronBase::Synapsis> s) override

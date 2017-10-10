@@ -43,13 +43,15 @@ public:
 		SetupBrain();
 	}
 
-	void Logic(const std::vector<std::shared_ptr<Object>>& objs) override
+	virtual void Logic(const std::vector<std::shared_ptr<Object>>& objs) override
 	{
 		for(const auto& o : objs)
 		{
 			if(o == shared_from_this())
 				continue;
-			// bla bla
+			//if(IsAlive)
+			mBrain->Activate();
+			mEnergy -= 0.05;
 		}
 	}
 
@@ -57,6 +59,17 @@ public:
 	{
 		mBrain.reset(new Brain);
 		// todo
+		int nhl = 2;
+		for (int i = 0; i < nhl; ++i)
+		{
+			mBrain->mHiddenLayers.push_back(Brain::NeuronLayer());
+			int nhn = 10;
+			for (int j = 0; j < nhn; ++j)
+			{
+				mBrain->mHiddenLayers[i].mNeurons.push_back(std::shared_ptr<NeuronBase>(new Neuron()));
+			}
+		}
+		mBrain->FillSynapsisGraph();
 	}
 	/*
 	def SetupBrain(self):
