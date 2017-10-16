@@ -6,12 +6,11 @@
 
 class INeuralObject : public std::enable_shared_from_this<INeuralObject>
 {
-protected:
-	static double Braveness;
 public:
 	virtual ~INeuralObject(){}
 	virtual void Activate() = 0;
 	virtual void Propagate() = 0;
+	static double Braveness;
 };
 
 #endif

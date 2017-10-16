@@ -1,5 +1,6 @@
 #include <memory>
 #include <cstdio>
+#include <random>
 
 #include "NeuralNet/Brain.h"
 
@@ -8,76 +9,76 @@ const int ny = 5;
 const int digits = 10;
 
 char imgs [digits][ny][nx] = {
-{//0
-{0,1,1,1,0},
-{1,0,0,0,1},
-{1,0,0,0,1},
-{1,0,0,0,1},
-{0,1,1,1,0}
-},//0
-{//1
-{0,0,1,1,0},
-{0,1,0,1,0},
-{0,0,0,1,0},
-{0,0,0,1,0},
-{0,0,0,1,0}
-},//1
-{//2
-{0,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1}
-},//2
-{//3
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1}
-},//3
-{//4
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1}
-},//4
-{//5
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1}
-},//5
-{//6
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1}
-},//6
-{//7
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1}
-},//7
-{//8
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1}
-},//8
-{//9
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1},
-{1,1,1,1,1}
-}//9
+	{//0
+		{ 0,1,1,1,0 },
+		{ 1,0,0,0,1 },
+		{ 1,0,0,0,1 },
+		{ 1,0,0,0,1 },
+		{ 0,1,1,1,0 }
+	},//0
+	{//1
+		{ 0,0,1,1,0 },
+		{ 0,1,0,1,0 },
+		{ 0,0,0,1,0 },
+		{ 0,0,0,1,0 },
+		{ 0,0,0,1,0 }
+	},//1
+	{//2
+		{ 0,1,1,1,0 },
+		{ 1,0,0,0,1 },
+		{ 0,0,1,1,0 },
+		{ 0,1,0,0,0 },
+		{ 1,1,1,1,1 }
+	},//2
+	{//3
+		{ 0,1,1,1,0 },
+		{ 1,0,0,0,1 },
+		{ 0,0,0,1,0 },
+		{ 1,0,0,0,1 },
+		{ 0,1,1,1,0 }
+	},//3
+	{//4
+		{ 0,0,0,1,0 },
+		{ 0,0,1,1,0 },
+		{ 0,1,0,1,0 },
+		{ 1,1,1,1,1 },
+		{ 0,0,0,1,0 }
+	},//4
+	{//5
+		{ 1,1,1,1,1 },
+		{ 1,0,0,0,0 },
+		{ 1,1,1,1,0 },
+		{ 0,0,0,0,1 },
+		{ 0,1,1,1,0 }
+	},//5
+	{//6
+		{ 0,1,1,1,0 },
+		{ 1,0,0,0,0 },
+		{ 1,1,1,1,0 },
+		{ 1,0,0,0,1 },
+		{ 0,1,1,1,0 }
+	},//6
+	{//7
+		{ 1,1,1,1,1 },
+		{ 0,0,0,0,1 },
+		{ 0,0,0,1,0 },
+		{ 0,0,1,0,0 },
+		{ 0,1,0,0,0 }
+	},//7
+	{//8
+		{ 0,1,1,1,0 },
+		{ 1,0,0,0,1 },
+		{ 0,1,1,1,0 },
+		{ 1,0,0,0,1 },
+		{ 0,1,1,1,0 }
+	},//8
+	{//9
+		{ 0,1,1,1,0 },
+		{ 1,0,0,0,1 },
+		{ 0,1,1,1,1 },
+		{ 0,0,0,0,1 },
+		{ 0,1,1,1,0 }
+	}//9
 };
 
 int current = 0;
@@ -94,6 +95,8 @@ std::function<double()> GetImgGetter(int x, int y)
 int main()
 {
 	auto ImageProcessor = std::make_unique<Brain>();
+	std::mt19937 r;
+	std::uniform_real_distribution<double> d(-1.0,1.0);
 
 	for(int i=0; i<ny; ++i)
 	{
@@ -102,10 +105,60 @@ int main()
 			ImageProcessor->mInputLayer.mNeurons.push_back(std::shared_ptr<NeuronBase>(new InputNeuron(GetImgGetter(j,i))));
 		}
 	}
+	std::shared_ptr<IFunctionObject> tanh(new TangentHyperbolicFunc);
 	for(int i=0; i<digits; ++i)
 	{
-		ImageProcessor->mOutputLayer.mNeurons.push_back(std::shared_ptr<NeuronBase>(new OutputNeuron()));
-		std::static_pointer_cast<Neuron>(ImageProcessor->mOutputLayer.mNeurons[i])->mTransferFilter = std::shared_ptr<IFunctionObject>(new TangentHyperbolicFunc);
+		OutputNeuron* n = new OutputNeuron;
+		n->mTransferFilter = tanh;
+		ImageProcessor->mOutputLayer.mNeurons.push_back(std::shared_ptr<NeuronBase>(n));
+	}
+
+	ImageProcessor->mHiddenLayers.push_back(Brain::NeuronLayer());
+	for (int i = 0; i < ny-1; ++i)
+	{
+		for (int j = 0; j < nx-1; ++j)
+		{
+			Neuron* n = new Neuron;
+			n->mTransferFilter = tanh;
+			ImageProcessor->mHiddenLayers[0].mNeurons.push_back(std::shared_ptr<NeuronBase>(n));
+			for (int ii = 0; ii < 2; ++ii)
+			{
+				for (int jj = 0; jj < 2; ++jj)
+				{
+					new NeuronBase::Synapsis(ImageProcessor->mInputLayer.mNeurons[(i + ii)*nx + j + jj], ImageProcessor->mHiddenLayers[0].mNeurons[i*(nx - 1) + j],d(r));
+				}
+			}
+			for (int ii = 0; ii < digits; ++ii)
+			{
+				new NeuronBase::Synapsis(ImageProcessor->mHiddenLayers[0].mNeurons[i*(nx - 1) + j], ImageProcessor->mOutputLayer.mNeurons[ii],d(r));
+			}
+		}
+	}
+
+	INeuralObject::Braveness = 0.05;
+	for (int lol = 0; lol < 1000; ++lol)
+	{
+		for (int digit = 0; digit < digits; ++digit)
+		{
+			current = digit;
+			ImageProcessor->Activate();
+			std::vector<double> expected(digits);
+			for (int d = 0; d < digits; ++d)
+				expected[d] = (d == digit) ? 1.0 : -1.0;
+			ImageProcessor->Propagate(expected);
+		}
+	}
+
+	for (int digit = 0; digit < digits; ++digit)
+	{
+		current = digit;
+		printf("#%d\n",digit);
+		ImageProcessor->Activate();
+		for (int i = 0; i < digits; ++i)
+		{
+			auto o = std::static_pointer_cast<OutputNeuron>(ImageProcessor->mOutputLayer.mNeurons[i]);
+			printf("%1.3f%%\n",(o->mOutput+1.0)*50.0);
+		}
 	}
 
 	printf("lol\n");
@@ -113,99 +166,6 @@ int main()
 	return 0;
 }
 /*
-import sys,os,inspect
-sys.path.append((os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))+"/..")
-import NeuralNet
-
-imgs=[
-[#0
-'01110',
-'10001',
-'10001',
-'10001',
-'01110'
-],#0
-[#1
-'00110',
-'01010',
-'00010',
-'00010',
-'00010'
-],#1
-[#2
-'01110',
-'10001',
-'00110',
-'01000',
-'11111'
-],#2
-[#3
-'01110',
-'10001',
-'00010',
-'10001',
-'01110'
-],#3
-[#4
-'00010',
-'00110',
-'01010',
-'11111',
-'00010'
-],#4
-[#5
-'11111',
-'10000',
-'11110',
-'00001',
-'01110'
-],#5
-[#6
-'01110',
-'10000',
-'11110',
-'10001',
-'01110'
-],#6
-[#7
-'11111',
-'00001',
-'00010',
-'00100',
-'01000'
-],#7
-[#8
-'01110',
-'10001',
-'01110',
-'10001',
-'01110'
-],#8
-[#9
-'01110',
-'10001',
-'01111',
-'00001',
-'01110'
-]#9
-]
-
-import random
-r=random.SystemRandom()
-r.seed(0)
-
-
-ny=len(imgs[0])
-nx=len(imgs[0][0])
-digs=len(imgs)
-
-Currimg=[0]
-def GetImgGetter(x:int,y:int):
-    def GetInput():
-        global Currimg
-        v=NeuralNet.ListValueHolder(Currimg)
-        return float(imgs[v()][y][x])
-    return GetInput
 
 ImageProcessor=NeuralNet.Brain()
 for i in range(0,ny):

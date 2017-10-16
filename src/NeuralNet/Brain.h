@@ -100,16 +100,20 @@ public:
 	}
 	virtual void Propagate() override
 	{
-		mInputLayer.Propagate();
-		for(auto& h : mHiddenLayers)
-			h.Propagate();
 		mOutputLayer.Propagate();
+		for(auto it = mHiddenLayers.rbegin(); it != mHiddenLayers.rend(); ++it)
+			it->Propagate();
+		mInputLayer.Propagate();
 	}
 	void Propagate(std::vector<double> expected)
 	{
 		if(expected.size() != mOutputLayer.mNeurons.size())
 			throw "size mismatch!";
-		// todo
+		for (int i = 0; i < expected.size(); ++i)
+		{
+			auto o = std::static_pointer_cast<OutputNeuron>(mOutputLayer.mNeurons[i]);
+			o->mEPS = expected[i] - o->mOutput;
+		}
 		Propagate();
 	}
 };
