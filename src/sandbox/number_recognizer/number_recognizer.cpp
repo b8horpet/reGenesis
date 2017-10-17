@@ -96,7 +96,7 @@ int main()
 {
 	auto ImageProcessor = std::make_unique<Brain>();
 	std::mt19937 r;
-	std::uniform_real_distribution<double> d(-1.0,1.0);
+	std::uniform_real_distribution<double> d(-0.1,0.1);
 
 	for(int i=0; i<ny; ++i)
 	{
@@ -135,7 +135,7 @@ int main()
 		}
 	}
 
-	INeuralObject::Braveness = 0.05;
+	INeuralObject::Braveness = 0.2;
 	for (int lol = 0; lol < 1000; ++lol)
 	{
 		for (int digit = 0; digit < digits; ++digit)
@@ -161,8 +161,6 @@ int main()
 		}
 	}
 
-	printf("lol\n");
-	getc(stdin);
 	return 0;
 }
 /*
