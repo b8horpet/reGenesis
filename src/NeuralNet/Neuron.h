@@ -11,7 +11,7 @@ class NeuronBase : public INeuralObject
 public:
 	class Synapsis : public INeuralObject
 	{
-	public:
+	private:
 		Synapsis(
 			std::shared_ptr<NeuronBase> from,
 			std::shared_ptr<NeuronBase> to,
@@ -22,9 +22,8 @@ public:
 			, mCurrent(0.0)
 			, mEPS(0.0)
 		{
-			//To->AddInput(std::static_pointer_cast<NeuronBase::Synapsis>(shared_from_this()));
-			To->AddInput(std::shared_ptr<NeuronBase::Synapsis>(this)); // bloergh, we're inside of a new, will crash on stack?
 		}
+	public:
 		std::shared_ptr<NeuronBase> From;
 		std::shared_ptr<NeuronBase> To;
 		double mWeight;
@@ -39,6 +38,14 @@ public:
 			From->mEPS += mEPS * mWeight;
 			mWeight += INeuralObject::Braveness * mEPS * mCurrent;
 			mEPS = 0.0;
+		}
+		static void CreateSynapsis(
+			std::shared_ptr<NeuronBase> from,
+			std::shared_ptr<NeuronBase> to,
+			double weight = 1.0)
+		{
+			std::shared_ptr<Synapsis> s(new Synapsis(from,to,weight));
+			to->AddInput(s);
 		}
 	};
 

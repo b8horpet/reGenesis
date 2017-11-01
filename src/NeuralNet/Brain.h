@@ -75,20 +75,20 @@ public:
 		{
 			for (auto i : mInputLayer.mNeurons)
 				for (auto o : mHiddenLayers[0].mNeurons)
-					new NeuronBase::Synapsis(i, o); // output owns the synapsys
+					NeuronBase::Synapsis::CreateSynapsis(i, o);
 			for( int h=0; h<l-1; ++h)
 				for (auto i : mHiddenLayers[h].mNeurons)
 					for (auto o : mHiddenLayers[h+1].mNeurons)
-						new NeuronBase::Synapsis(i, o); // output owns the synapsys
+						NeuronBase::Synapsis::CreateSynapsis(i, o);
 			for (auto i : mHiddenLayers[l-1].mNeurons)
 				for (auto o : mOutputLayer.mNeurons)
-					new NeuronBase::Synapsis(i, o); // output owns the synapsys
+					NeuronBase::Synapsis::CreateSynapsis(i, o);
 		}
 		else
 		{
 			for (auto i : mInputLayer.mNeurons)
 				for (auto o : mOutputLayer.mNeurons)
-					new NeuronBase::Synapsis(i, o); // output owns the synapsys
+					NeuronBase::Synapsis::CreateSynapsis(i, o);
 		}
 	}
 	virtual void Activate() override

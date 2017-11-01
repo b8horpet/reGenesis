@@ -125,12 +125,12 @@ int main()
 			{
 				for (int jj = 0; jj < 2; ++jj)
 				{
-					new NeuronBase::Synapsis(ImageProcessor->mInputLayer.mNeurons[(i + ii)*nx + j + jj], ImageProcessor->mHiddenLayers[0].mNeurons[i*(nx - 1) + j],d(r));
+					NeuronBase::Synapsis::CreateSynapsis(ImageProcessor->mInputLayer.mNeurons[(i + ii)*nx + j + jj], ImageProcessor->mHiddenLayers[0].mNeurons[i*(nx - 1) + j],d(r));
 				}
 			}
 			for (int ii = 0; ii < digits; ++ii)
 			{
-				new NeuronBase::Synapsis(ImageProcessor->mHiddenLayers[0].mNeurons[i*(nx - 1) + j], ImageProcessor->mOutputLayer.mNeurons[ii],d(r));
+				NeuronBase::Synapsis::CreateSynapsis(ImageProcessor->mHiddenLayers[0].mNeurons[i*(nx - 1) + j], ImageProcessor->mOutputLayer.mNeurons[ii],d(r));
 			}
 		}
 	}
