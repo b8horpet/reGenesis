@@ -77,8 +77,8 @@ public:
 
 	virtual void Physics(double dT) override
 	{
-		Eulerish(dT);
-		//RK4(dT);
+		//Eulerish(dT);
+		RK4(dT);
 	}
 
 	virtual void Logic(const std::vector<std::shared_ptr<Object>>& objs) override
@@ -102,6 +102,23 @@ public:
 		mAcceleration=Vec3();
 	}
 
+	void RK4(double dT)
+	{
+		Vec3 ad;
+		for(size_t i=0; i<mFrictionCoeffs.size(); ++i)
+		{
+			ad+=mVelocity*pow(mVelocity.Length(),i)*mFrictionCoeffs[i]*-1.0;
+		}
+		ad/=mMass;
+		mAcceleration+=ad;
+		Vec3 k1[2]={mVelocity*dT,mAcceleration*dT};
+		Vec3 k2[2]={(mVelocity+k1[0]*0.5)*dT,(mAcceleration+k1[1]*0.5)*dT};
+		Vec3 k3[2]={(mVelocity+k2[0]*0.5)*dT,(mAcceleration+k2[1]*0.5)*dT};
+		Vec3 k4[2]={(mVelocity+k3[0])*dT,(mAcceleration+k3[1])*dT};
+		mPosition+=(k1[0]+k2[0]*2.0+k3[0]*2.0+k4[0])*(1.0/6.0);
+		mVelocity+=(k1[1]+k2[1]*2.0+k3[1]*2.0+k4[1])*(1.0/6.0);
+		mAcceleration=Vec3();
+	}
 	/*
 	def RK4(self, dT: float):
 		ad=Vector3D(0.0,0.0,0.0)
