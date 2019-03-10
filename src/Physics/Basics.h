@@ -6,6 +6,7 @@
 #include <array>
 #include <initializer_list>
 #include <cmath>
+#include "Debug.h"
 
 #ifdef DEBUG
 #include <cassert>

@@ -54,7 +54,8 @@ Surface_SDL::Surface_SDL()
 
 	Renderer.reset(new Render_OpenGL());
 	
-	SDL_GL_SetSwapInterval(1);
+	//SDL_GL_SetSwapInterval(1);
+	SDL_GL_SetSwapInterval(0);
 	((Render_OpenGL*)Renderer.get())->InitGL();
 
 	printf("Surface SDL2\n");
@@ -68,8 +69,12 @@ Surface_SDL::~Surface_SDL()
 
 void Surface_SDL::Present()
 {
+	MEASURE();
 	Renderer->Render();
+	{
+	timer_helper("SDL_GL_SwapWindow");
 	SDL_GL_SwapWindow(window);
+	}
 	HandleInput();
 	//MainLoop(0,nullptr);
 }
@@ -86,11 +91,13 @@ bool Surface_SDL::SetProperties(ISurface::Properties p)
 
 IRenderer* Surface_SDL::GetRenderer()
 {
+	MEASURE();
 	return Renderer.get();
 }
 
 void Surface_SDL::HandleInput()
 {
+	MEASURE();
 	SDL_Event e;
 	while(SDL_PollEvent(&e))
 	{

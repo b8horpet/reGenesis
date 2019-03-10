@@ -21,6 +21,7 @@ int main(int argc, char** argv)
 	auto theSurface=CreateSurface("SDL2");
 	printf("reGenesis\n");
 	for(int i=0; i<10000; ++i) {
+		MEASURE();
 		theWorld.Activate();
 		if(theSurface)
 		{

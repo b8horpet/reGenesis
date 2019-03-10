@@ -1,5 +1,5 @@
 #include "World.h"
-
+#include <chrono>
 
 World::TileGeometry::Tile& World::TileGeometry::GetTile(double x, double y)
 {
@@ -296,6 +296,7 @@ void World::Spawn()
 
 void World::Activate()
 {
+	MEASURE();
 	Spawn();
 	Logic();
 	for(int i=0; i<5; ++i)
@@ -308,6 +309,7 @@ void World::Activate()
 
 std::vector<std::shared_ptr<ObjectData>> World::GetRenderData()
 {
+	MEASURE();
 	std::vector<std::shared_ptr<ObjectData>> ret;
 	for(auto o : mObjects)
 	{
