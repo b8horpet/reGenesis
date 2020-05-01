@@ -1,4 +1,5 @@
 #include "Debug.h"
+#include <cstring>
 
 #include <cstdarg>
 #ifdef _WIN32
