@@ -28,8 +28,8 @@ void DEBUG_LOG(const char* fmt, ...)
 }
 
 timer_helper::timer_helper(const char* name)
-	: name(name)
-	, start(std::chrono::high_resolution_clock::now())
+	: start(std::chrono::high_resolution_clock::now())
+	, name(name)
 {}
 
 timer_helper::~timer_helper()

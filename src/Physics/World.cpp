@@ -132,7 +132,7 @@ void World::Geometry_RDC::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 			double maxD=c0[0]->GetBoundingBox().second[dim];
 			double minD=c0[0]->GetBoundingBox().first[dim];
 			std::vector<std::pair<int,std::pair<double,double>>> ClusterBoundaries;
-			for(int j=0; j<c0.size(); ++j)
+			for(long j=0; j<(long)c0.size(); ++j)
 			{
 				auto o=c0[j];
 				auto bb = o->GetBoundingBox();

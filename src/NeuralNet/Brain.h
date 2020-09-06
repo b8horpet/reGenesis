@@ -109,7 +109,7 @@ public:
 	{
 		if(expected.size() != mOutputLayer.mNeurons.size())
 			throw "size mismatch!";
-		for (int i = 0; i < expected.size(); ++i)
+		for (int i = 0; i < (int)expected.size(); ++i)
 		{
 			auto o = std::static_pointer_cast<OutputNeuron>(mOutputLayer.mNeurons[i]);
 			o->mEPS = expected[i] - o->mOutput;

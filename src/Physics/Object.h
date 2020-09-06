@@ -81,7 +81,7 @@ public:
 		RK4(dT);
 	}
 
-	virtual void Logic(const std::vector<std::shared_ptr<Object>>& objs) override
+	virtual void Logic(const std::vector<std::shared_ptr<Object>>& /*objs*/) override
 	{
 		// intentionally do nothing
 	}

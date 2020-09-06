@@ -81,10 +81,10 @@ void Surface_SDL::Present()
 
 ISurface::Properties Surface_SDL::GetProperties()
 {
-	return {0,0,0,0};
+	return {{0,0},{0,0}};
 }
 
-bool Surface_SDL::SetProperties(ISurface::Properties p)
+bool Surface_SDL::SetProperties(ISurface::Properties /*p*/)
 {
 	return false;
 }

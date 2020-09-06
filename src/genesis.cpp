@@ -8,7 +8,7 @@
 
 #include <cmath>
 
-int main(int argc, char** argv)
+int main(/*int argc, char** argv*/)
 {
 	World theWorld;
 	for(int i=0; i<5; ++i)

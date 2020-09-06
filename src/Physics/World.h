@@ -5,6 +5,8 @@
 #include "Basics.h"
 #include "SharedData.h"
 #include "Object.h"
+#include "IGeometry.h"
+#include "KDTree.h"
 #include "Creature/Creature.h"
 #include <utility>
 #include <vector>
@@ -29,12 +31,6 @@ private:
 #endif
 
 public:
-	class IGeometry
-	{
-	public:
-		virtual ~IGeometry(){}
-		virtual void DoCollisions(std::vector<std::shared_ptr<Object>> os) = 0;
-	};
 	std::unique_ptr<IGeometry> mGeometry;
 
 	class TileGeometry : public IGeometry
