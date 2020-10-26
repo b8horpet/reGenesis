@@ -35,5 +35,6 @@ timer_helper::timer_helper(const char* name)
 timer_helper::~timer_helper()
 {
 	auto stop = std::chrono::high_resolution_clock::now();
-	DEBUG_LOG("%s %f ms\n",name.c_str(), std::chrono::duration<double, std::milli>(stop - start).count());
+	DEBUG_LOG("%s %f ms",name.c_str(), std::chrono::duration<double, std::milli>(stop - start).count());
 }
+

@@ -69,10 +69,12 @@ Surface_SDL::~Surface_SDL()
 
 void Surface_SDL::Present()
 {
-	MEASURE();
+	ZoneScoped;
+	//MEASURE();
 	Renderer->Render();
 	{
-	timer_helper("SDL_GL_SwapWindow");
+	ZoneScopedN("SDL_GL_SwapWindow");
+	// timer_helper("SDL_GL_SwapWindow");
 	SDL_GL_SwapWindow(window);
 	}
 	HandleInput();
@@ -91,13 +93,15 @@ bool Surface_SDL::SetProperties(ISurface::Properties /*p*/)
 
 IRenderer* Surface_SDL::GetRenderer()
 {
-	MEASURE();
+	ZoneScoped;
+	//MEASURE();
 	return Renderer.get();
 }
 
 void Surface_SDL::HandleInput()
 {
-	MEASURE();
+	ZoneScoped;
+	//MEASURE();
 	SDL_Event e;
 	while(SDL_PollEvent(&e))
 	{

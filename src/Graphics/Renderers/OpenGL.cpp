@@ -47,7 +47,8 @@ bool Render_OpenGL::InitGL()
 
 void Render_OpenGL::Render()
 {
-	MEASURE();
+	ZoneScoped;
+	//MEASURE();
 	glClear(GL_COLOR_BUFFER_BIT);
 	glLoadIdentity();
 	glScalef(0.1,0.1,0.1);
@@ -82,7 +83,8 @@ void Render_OpenGL::Render()
 
 void Render_OpenGL::UpdateData(std::vector<std::shared_ptr<ObjectData>> r)
 {
-	MEASURE();
+	ZoneScoped;
+	//MEASURE();
 	// inefficient shit, will do for now
 	SharedData=r;
 }	

@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <string>
+#include "../tracy/Tracy.hpp"
 
 void DEBUG_LOG(const char* fmt, ...);
 

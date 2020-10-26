@@ -11,6 +11,7 @@ World::TileGeometry::Tile& World::TileGeometry::GetTile(double x, double y)
 
 void World::TileGeometry::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 {
+	ZoneScopedN("TileGeometry::BroadPhase");
 	mTiles.clear();
 	for( auto obj : os)
 	{
@@ -76,6 +77,7 @@ void World::TileGeometry::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 
 void World::TileGeometry::NarrowPhase()
 {
+	ZoneScopedN("TileGeometry::NarrowPhase");
 	std::set<std::pair<Object*,Object*>> colls;
 	for( auto p : mTiles)
 	{
@@ -101,6 +103,7 @@ void World::TileGeometry::NarrowPhase()
 
 void World::Geometry_RDC::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 {
+	ZoneScopedN("Geometry_RDC::BroadPhase");
 	mClusters.clear();
 	//std::array<char,2> dimensions={'x','y'}; // why???
 	std::vector<std::tuple<std::vector<std::shared_ptr<Object>>,std::array<bool,2>,std::array<std::pair<double,double>,2>>> dirtyClusters;
@@ -228,6 +231,7 @@ void World::Geometry_RDC::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 
 void World::Geometry_RDC::NarrowPhase()
 {
+	ZoneScopedN("Geometry_RDC::NarrowPhase");
 	std::set<std::pair<Object*,Object*>> colls;
 	for( auto& cl : mClusters)
 	{
@@ -254,9 +258,12 @@ void World::Geometry_RDC::NarrowPhase()
 
 void World::Physics(double dT)
 {
+	ZoneScoped;
 	std::vector<std::shared_ptr<Object>> dead;
 	//double TileSize=static_cast<TileGeometry*>(mGeometry.get())->mTileSize;
 	//TileSize=0.0;
+	{
+	ZoneScopedN("Movement");
 	for(auto o : mObjects)
 	{
 		std::shared_ptr<Sphere> s=std::dynamic_pointer_cast<Sphere>(o);
@@ -272,8 +279,12 @@ void World::Physics(double dT)
 			dead.push_back(o);
 		}
 	}
+	}
+	{
+	ZoneScopedN("Remove dead");
 	for(auto d : dead)
 		RemoveObject(d);
+	}
 	//TileSize*=2.0;
 	//static_cast<TileGeometry*>(mGeometry.get())->mTileSize=unsigned(TileSize+0.5)+1;
 	mGeometry->DoCollisions(mObjects);
@@ -281,6 +292,7 @@ void World::Physics(double dT)
 
 void World::Logic()
 {
+	ZoneScoped;
 	for(auto& o : mObjects)
 	{
 		// todo
@@ -290,13 +302,15 @@ void World::Logic()
 
 void World::Spawn()
 {
+	ZoneScoped;
 	// todo
 }
 
 
 void World::Activate()
 {
-	MEASURE();
+	ZoneScoped;
+	//MEASURE();
 	Spawn();
 	Logic();
 	for(int i=0; i<5; ++i)
@@ -309,7 +323,8 @@ void World::Activate()
 
 std::vector<std::shared_ptr<ObjectData>> World::GetRenderData()
 {
-	MEASURE();
+	ZoneScoped;
+	//MEASURE();
 	std::vector<std::shared_ptr<ObjectData>> ret;
 	for(auto o : mObjects)
 	{
