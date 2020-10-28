@@ -1,3 +1,3 @@
 #include "Object.h"
 
-long Object::ID=0;
+Object::ObjectID Object::ID=0;

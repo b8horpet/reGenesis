@@ -13,6 +13,8 @@ static SDL_GLContext context = nullptr;
 
 constexpr int window_size = 1000;
 
+extern bool g_Paused;
+
 Surface_SDL::Surface_SDL()
 : Renderer(nullptr)
 {
@@ -117,7 +119,7 @@ void Surface_SDL::HandleInput()
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:
 		{
-			const SDL_KeyboardEvent& k = *reinterpret_cast<SDL_KeyboardEvent*>(&e);
+			const SDL_KeyboardEvent& k = e.key;
 			if(k.state == SDL_PRESSED)
 			{
 				switch(k.keysym.sym)
@@ -131,7 +133,7 @@ void Surface_SDL::HandleInput()
 					if(k.repeat == 0)
 					{
 						fullscreen = !fullscreen;
-						SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+						SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN/*_DESKTOP*/ : 0);
 						// handle centered?
 					}
 				} break;
@@ -160,6 +162,13 @@ void Surface_SDL::HandleInput()
 				case SDLK_HOME:
 					Renderer->ResetView();
 					break;
+				case SDLK_SPACE:
+				{
+					if(k.repeat == 0)
+					{
+						g_Paused = !g_Paused;
+					}
+				} break;
 				}
 			}
 		} break;
@@ -171,6 +180,14 @@ void Surface_SDL::HandleInput()
 		SDL_Quit();
 		::exit(1);
 	}
+}
+
+void Surface_SDL::SaveBitmap(const std::string& path)
+{
+	SDL_Surface *sshot = SDL_CreateRGBSurface(0, window_size, window_size, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+	SDL_RenderReadPixels(SDL_GetRenderer(window), NULL, SDL_PIXELFORMAT_ARGB8888, sshot->pixels, sshot->pitch);
+	SDL_SaveBMP(sshot, path.c_str());
+	SDL_FreeSurface(sshot);
 }
 
 // ---------- o ----------

@@ -1,6 +1,8 @@
 #include "World.h"
 #include <chrono>
 
+bool g_Paused = false;
+
 World::TileGeometry::Tile& World::TileGeometry::GetTile(double x, double y)
 {
 	std::pair<long long,long long> c((long long)(floor(x/double(mTileSize))),(long long)(floor(y/double(mTileSize))));
@@ -320,6 +322,7 @@ void World::Spawn()
 
 void World::Activate()
 {
+	if(g_Paused) return;
 	ZoneScoped;
 	//MEASURE();
 	Spawn();

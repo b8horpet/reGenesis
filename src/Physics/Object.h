@@ -24,10 +24,13 @@ struct PhysEffect
 
 class Object : public std::enable_shared_from_this<Object>
 {
-	static long ID;
+public:
+	typedef long ObjectID;
+private:
+	static ObjectID ID;
 //protected:
 public:
-	const long mID;
+	const ObjectID mID;
 public:
 	Object()
 		: mID(++ID)

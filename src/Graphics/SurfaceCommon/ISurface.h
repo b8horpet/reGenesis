@@ -19,6 +19,7 @@ public:
 	virtual Properties GetProperties() = 0;
 	virtual bool SetProperties(Properties p) = 0;
 	virtual IRenderer* GetRenderer() = 0;
+	virtual void SaveBitmap(const std::string&) {}
 };
 
 std::unique_ptr<ISurface> CreateSurface(std::string surface_name);

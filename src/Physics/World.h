@@ -21,7 +21,16 @@ class World
 public:
 	// this ain't a good idea
 	std::vector<std::shared_ptr<Object>> mObjects;
+	std::weak_ptr<Object> LookUp(Object::ObjectID id) const
+	{
+		if(mObject_lookup.count(id) == 1)
+		{
+			return mObject_lookup.at(id);
+		}
+		return {};
+	}
 private:
+	std::map<Object::ObjectID, std::weak_ptr<Object>> mObject_lookup;
 	size_t mObjLimit;
 	double mSize;
 	unsigned long mTickCnt;
@@ -123,11 +132,15 @@ public:
 	void AddObject(std::shared_ptr<Object> o)
 	{
 		mObjects.push_back(o);
+		assert(mObject_lookup.count(o->mID) == 0);
+		mObject_lookup.emplace(o->mID, o);
 	}
 
 	void RemoveObject(std::shared_ptr<Object> o)
 	{
-		//intentionally don't want to check if it's still in there		
+		//intentionally don't want to check if it's still in there
+		assert(mObject_lookup.count(o->mID) == 1);
+		mObject_lookup.erase(o->mID);
 		mObjects.erase(std::find(mObjects.begin(),mObjects.end(),o));
 	}
 

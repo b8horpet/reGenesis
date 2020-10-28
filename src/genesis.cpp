@@ -8,10 +8,12 @@
 
 #include <cmath>
 
-int main(/*int argc, char** argv*/)
+extern bool g_Paused;
+
+int main(int argc, char** argv)
 {
 	ZoneScopedN("main");
-	World theWorld;
+	World theWorld(argc > 1 ? argv[1] : "");
 	{
 	ZoneScopedN("init")
 	for(int i=0; i<5; ++i)
@@ -24,10 +26,13 @@ int main(/*int argc, char** argv*/)
 	theWorld.AddObject(c);
 	auto theSurface=CreateSurface("SDL2");
 	printf("reGenesis\n");
-	for(int i=0; i<10000; ++i) {
+	// g_Paused = true;
+	for(int i=0; i<10000;)
+	{
 		ZoneScopedN("loop");
 		// MEASURE();
 		theWorld.Activate();
+		if(!g_Paused) i++;
 		if(theSurface)
 		{
 			ZoneScopedN("render");

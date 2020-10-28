@@ -13,6 +13,7 @@ public:
 	virtual ISurface::Properties GetProperties() override;
 	virtual bool SetProperties(ISurface::Properties p) override;
 	virtual IRenderer* GetRenderer() override;
+	virtual void SaveBitmap(const std::string&) override;
 private:
 	bool InitGL();
 	void Render();
