@@ -41,10 +41,10 @@ public:
 		private:
 			Tile();
 		public:
-			std::pair<int,int> mCoord;
+			std::pair<long long,long long> mCoord;
 			//std::vector<std::weak_ptr<Object>> mObjects;
 			std::vector<Object*> mObjects;
-			Tile(int x, int y) : mCoord(x,y) {}
+			Tile(long long x, long long y) : mCoord(x,y) {}
 			void AddObject(Object* o)
 			{
 				for(auto x : mObjects)
@@ -63,16 +63,16 @@ public:
 		};
 		virtual ~TileGeometry(){}
 		TileGeometry()
-			: mTileSize(5)
+			: mTileSize(0)
 		{}
 		virtual void DoCollisions(std::vector<std::shared_ptr<Object>> os) override
 		{
 			BroadPhase(os);
 			NarrowPhase();
 		}
-		int mTileSize;
+		long long mTileSize;
 	private:
-		std::map<std::pair<int,int>,Tile> mTiles;
+		std::map<std::pair<long long,long long>,Tile> mTiles;
 		Tile& GetTile(double x, double y);
 		void BroadPhase(std::vector<std::shared_ptr<Object>> os);
 		void NarrowPhase();

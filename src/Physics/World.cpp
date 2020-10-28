@@ -3,7 +3,7 @@
 
 World::TileGeometry::Tile& World::TileGeometry::GetTile(double x, double y)
 {
-	std::pair<int,int> c(int(floor(x/double(mTileSize))),int(floor(y/double(mTileSize))));
+	std::pair<long long,long long> c((long long)(floor(x/double(mTileSize))),(long long)(floor(y/double(mTileSize))));
 	if(mTiles.count(c)==0)
 		mTiles.emplace(std::make_pair(c,Tile(c.first,c.second)));
 	return mTiles.at(c);
@@ -13,6 +13,13 @@ void World::TileGeometry::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 {
 	ZoneScopedN("TileGeometry::BroadPhase");
 	mTiles.clear();
+	double max_radius = 0.0;
+	for( auto obj : os)
+	{
+		Sphere* o = dynamic_cast<Sphere*>(obj.get());
+		max_radius = std::max(o->mRadius, max_radius);
+	}
+	mTileSize = (long long)(std::floor(max_radius * 2.0 + 0.5)) + 1ll;
 	for( auto obj : os)
 	{
 		Sphere* o = dynamic_cast<Sphere*>(obj.get());
@@ -42,7 +49,7 @@ void World::TileGeometry::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 		}
 		if(additional.size() == 2)
 		{
-			Vec<2,int> corner{t.mCoord.first+additional['x'], t.mCoord.second+additional['y']};
+			Vec<2,long long> corner{t.mCoord.first+additional['x'], t.mCoord.second+additional['y']};
 			corner*=mTileSize;
 			if((Vec3{(double)corner[0],(double)corner[1],0}-o->mPosition).Length() < o->mRadius)
 			{
@@ -273,6 +280,10 @@ void World::Physics(double dT)
 			//if(TileSize<s->mRadius)
 			//	TileSize=s->mRadius;
 			o->Physics(dT);
+			if(!(o->GetPosition().Length() < 1e10)) // for NaNs
+			{
+				dead.push_back(o);
+			}
 		}
 		else
 		{
