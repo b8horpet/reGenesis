@@ -8,7 +8,7 @@
 class IFunctionObject : public std::enable_shared_from_this<IFunctionObject>
 {
 public:
-    virtual double operator()(double) = 0;
+	virtual double operator()(double) = 0;
 
 	virtual std::shared_ptr<IFunctionObject> Differentiate()
 	{

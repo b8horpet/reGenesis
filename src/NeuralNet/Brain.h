@@ -31,19 +31,19 @@ public:
 	NeuronLayer mInputLayer;
 	std::vector<NeuronLayer> mHiddenLayers;
 	NeuronLayer mOutputLayer;
-    void RegisterNeuron(std::shared_ptr<NeuronBase> n)
+	void RegisterNeuron(std::shared_ptr<NeuronBase> n)
 	{
 		std::shared_ptr<InputNeuron> i=std::dynamic_pointer_cast<InputNeuron>(n);
 		std::shared_ptr<OutputNeuron> o=std::dynamic_pointer_cast<OutputNeuron>(n);
-        if(i)
+		if(i)
 		{
-            mInputLayer.mNeurons.push_back(n);
+			mInputLayer.mNeurons.push_back(n);
 		}
-        else if(o)
+		else if(o)
 		{
-            mOutputLayer.mNeurons.push_back(n);
+			mOutputLayer.mNeurons.push_back(n);
 		}
-        else
+		else
 		{
 			// should be handled differently
 			// target layer should be passed as a parameter

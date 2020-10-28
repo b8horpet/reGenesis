@@ -14,7 +14,9 @@ public:
 	virtual ~IRenderer() {}
 	virtual void Render() = 0;
 	virtual void UpdateData(std::vector<std::shared_ptr<ObjectData>>) = 0;
-protected:
+	virtual void MoveOffset(const Vec2&) {}
+	virtual void ZoomScale(double) {}
+	virtual void ResetView() {}
 };
 
 #endif

@@ -105,14 +105,71 @@ void Surface_SDL::HandleInput()
 	ZoneScoped;
 	//MEASURE();
 	SDL_Event e;
+	bool should_exit = false;
 	while(SDL_PollEvent(&e))
 	{
-		if(e.type == SDL_QUIT)
+		switch(e.type)
 		{
-			SDL_DestroyWindow(window);
-			SDL_Quit();
-			::exit(1);
+		case SDL_QUIT:
+		{
+			should_exit = true;
+		} break;
+		case SDL_KEYDOWN:
+		case SDL_KEYUP:
+		{
+			const SDL_KeyboardEvent& k = *reinterpret_cast<SDL_KeyboardEvent*>(&e);
+			if(k.state == SDL_PRESSED)
+			{
+				switch(k.keysym.sym)
+				{
+				case SDLK_ESCAPE:
+				{
+					should_exit = true;
+				} break;
+				case SDLK_f:
+				{
+					if(k.repeat == 0)
+					{
+						fullscreen = !fullscreen;
+						SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+						// handle centered?
+					}
+				} break;
+				case SDLK_w:
+				case SDLK_UP:
+					Renderer->MoveOffset(Vec2{0.,1.});
+					break;
+				case SDLK_s:
+				case SDLK_DOWN:
+					Renderer->MoveOffset(Vec2{0.,-1.});
+					break;
+				case SDLK_a:
+				case SDLK_LEFT:
+					Renderer->MoveOffset(Vec2{-1.,0.});
+					break;
+				case SDLK_d:
+				case SDLK_RIGHT:
+					Renderer->MoveOffset(Vec2{1.,0.});
+					break;
+				case SDLK_KP_PLUS:
+					Renderer->ZoomScale(.75);
+					break;
+				case SDLK_KP_MINUS:
+					Renderer->ZoomScale(1.0/.75);
+					break;
+				case SDLK_HOME:
+					Renderer->ResetView();
+					break;
+				}
+			}
+		} break;
 		}
+	}
+	if(should_exit)
+	{
+		SDL_DestroyWindow(window);
+		SDL_Quit();
+		::exit(1);
 	}
 }
 

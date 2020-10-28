@@ -53,7 +53,8 @@ void Render_OpenGL::Render()
 	//MEASURE();
 	glClear(GL_COLOR_BUFFER_BIT);
 	glLoadIdentity();
-	glScalef(0.1,0.1,0.1);
+	glScalef(scale,scale,scale);
+	glTranslatef(offset[0], offset[1], 0.0);
 	//glBegin(GL_LINE_LOOP);
 	for(auto& o : SharedData)
 	{
@@ -91,6 +92,22 @@ void Render_OpenGL::UpdateData(std::vector<std::shared_ptr<ObjectData>> r)
 	// inefficient shit, will do for now
 	SharedData=r;
 }	
+
+void Render_OpenGL::MoveOffset(const Vec2& off)
+{
+	offset -= (off / scale) * .1;
+}
+
+void Render_OpenGL::ZoomScale(double s)
+{
+	scale /= s;
+}
+
+void Render_OpenGL::ResetView()
+{
+	scale = default_scale;
+	offset = Vec2{};
+}
 
 /*#author: b8horpet
 

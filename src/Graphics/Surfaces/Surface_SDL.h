@@ -20,6 +20,7 @@ private:
 	int MainLoop(int argc, char** argv);
 	void HandleInput();
 	std::unique_ptr<IRenderer> Renderer;
+	bool fullscreen = false;
 };
 
 #endif
