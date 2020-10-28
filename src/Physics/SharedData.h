@@ -15,7 +15,7 @@ struct Metadata
 		Cube,
 		PolyHedron,
 	} Shape;
-	Vec3 Color;
+	Vec<4> Color;
 	Metadata(ObjectShape s=None) : Shape(s) {}
 };
 

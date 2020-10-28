@@ -36,6 +36,8 @@ bool Render_OpenGL::InitGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glClearColor(0.0f,0.0f,0.0f,1.0f);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 	int error=glGetError();
 	if(error!=GL_NO_ERROR)
 	{
@@ -66,11 +68,12 @@ void Render_OpenGL::Render()
 			//fprintf(stderr,"render sphere\n");
 			auto s=std::dynamic_pointer_cast<SphereData>(o);
 			glTranslatef(s->Center[0],s->Center[1],s->Center[2]);
-			glColor3f(s->Meta.Color[0],s->Meta.Color[1],s->Meta.Color[2]);
+			glColor4f(s->Meta.Color[0],s->Meta.Color[1],s->Meta.Color[2],s->Meta.Color[3]);
+			const double r = s->Radius;
 			glBegin(GL_POLYGON);
 			// ignore radius for now
 			for(int i=0; i<40; ++i)
-				glVertex2f(circle[i].x,circle[i].y);
+				glVertex2f(r * circle[i].x, r * circle[i].y);
 			glEnd();
 		}break;
 		default:

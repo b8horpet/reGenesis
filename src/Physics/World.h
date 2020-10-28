@@ -98,14 +98,25 @@ public:
 	/*
 	 * ... and the programmer called the constructor, and there was World
 	 */
-	World(/*random*/)
+	World(const std::string& geometry = "")
 		: mObjects()
 		, mObjLimit(1000)
 		, mSize(25.0)
 		, mTickCnt(0)
-//		, mGeometry(new TileGeometry())
-		, mGeometry(new Geometry_RDC())
+		, mGeometry()
 	{
+		if(geometry == "RDC" || geometry == "" /*default*/)
+		{
+			mGeometry.reset(new Geometry_RDC());
+		}
+		else if(geometry == "tile")
+		{
+			mGeometry.reset(new TileGeometry());
+		}
+		else
+		{
+			throw "not implemented";
+		}
 		//self.Random = random
 	}
 
@@ -120,11 +131,11 @@ public:
 		mObjects.erase(std::find(mObjects.begin(),mObjects.end(),o));
 	}
 
-	void Physics(double dT);
-	void Logic();
-	void Spawn();
-	void Activate();
-	std::vector<std::shared_ptr<ObjectData>> GetRenderData();
+	virtual void Physics(double dT);
+	virtual void Logic();
+	virtual void Spawn();
+	virtual void Activate();
+	virtual std::vector<std::shared_ptr<ObjectData>> GetRenderData();
 };
 
 #endif

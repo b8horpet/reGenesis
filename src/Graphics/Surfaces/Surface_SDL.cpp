@@ -11,13 +11,15 @@ static SDL_Window* window = nullptr;
 static SDL_GLContext context = nullptr;
 
 
+constexpr int window_size = 1000;
+
 Surface_SDL::Surface_SDL()
 : Renderer(nullptr)
 {
 	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		fprintf(stderr,"SDL could not initialize, error='%s'\n",SDL_GetError());
-		throw 1;
+		throw "SDL init error";
 	}
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
@@ -25,10 +27,10 @@ Surface_SDL::Surface_SDL()
 	window = SDL_CreateWindow("reGenesis",
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
-			400,
-			400,
+			window_size,
+			window_size,
 			SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
-//	if(!SDL_CreateWindowAndRenderer(400,400,0,&window,&renderer))
+//	if(!SDL_CreateWindowAndRenderer(window_size,window_size,0,&window,&renderer))
 //	{
 //		fprintf(stderr,"failed to create window, or renderer %s\n", SDL_GetError());
 //		return 1;
@@ -36,7 +38,7 @@ Surface_SDL::Surface_SDL()
 	if(!window)
 	{
 		fprintf(stderr, "SDL window creation failed, error='%s'\n",SDL_GetError());
-		throw 1;
+		throw "SDL window creation error";
 	}
 //	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 //	if(!renderer)
@@ -49,7 +51,7 @@ Surface_SDL::Surface_SDL()
 	{
 		fprintf(stderr, "SDL GL context creation failed, error='%s'\n",SDL_GetError());
 		SDL_DestroyWindow(window);
-		throw 1;
+		throw "SDL GL context creation error";
 	}
 
 	Renderer.reset(new Render_OpenGL());

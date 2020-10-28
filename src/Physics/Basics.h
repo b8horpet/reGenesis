@@ -18,11 +18,13 @@
 template<int D, typename DataType=double>
 class Vec
 {
+	template<int other_D, typename other_DataType>
+	friend class Vec;
 	std::array<DataType, D> data;
 public:
 	static const int Dimension=D;
 	// ctor, op=
-	Vec() noexcept : data(std::array<DataType,D>()) {}
+	Vec() noexcept : data() {}
 	Vec(const std::array<DataType,D>& init) noexcept : data(init) {}
 	// TODO
 	//Vec(const DataType(&init)[D]) noexcept : data{init} {}
@@ -76,6 +78,14 @@ public:
 		for(int i=other.Dimension; i<Dimension; ++i)
 			data[i]=0;
 		return *this;
+	}
+	template<int other_D, int idx = 0, typename = std::enable_if_t< (idx >= 0 && other_D+idx<=D) > >
+	Vec<other_D,DataType> Slice() const
+	{
+		Vec<other_D,DataType> ret;
+		for(int i=0; i<other_D; ++i)
+			ret.data[i]=data[i+idx];
+		return ret;
 	}
 	// operators
 	inline bool operator==(const Vec<D,DataType>&other) const
@@ -173,5 +183,21 @@ public:
 typedef Vec<2> Vec2;
 typedef Vec<3> Vec3;
 
+template<typename T>
+T clamp(T in, T low, T high)
+{
+	return std::min(std::max(in, low), high);
+}
+
+template<int D, typename DataType=double>
+Vec<D, DataType> clamp(const Vec<D, DataType>& v, DataType low, DataType high)
+{
+	Vec<D, DataType> ret;
+	for(int i=0; i<D; ++i)
+	{
+		ret[i]=clamp(v[i], low, high);
+	}
+	return ret;
+}
 
 #endif

@@ -328,12 +328,13 @@ std::vector<std::shared_ptr<ObjectData>> World::GetRenderData()
 	std::vector<std::shared_ptr<ObjectData>> ret;
 	for(auto o : mObjects)
 	{
-		std::shared_ptr<SphereData> s(new SphereData());
+		std::shared_ptr<SphereData> sd(new SphereData());
+		std::shared_ptr<Sphere> s=std::dynamic_pointer_cast<Sphere>(o);
 
-		s->Center=o->GetPosition();
-		s->Radius=1.0;
-		s->Meta.Color=Vec3{1.0,0.0,0.0};
-		ret.push_back(s);
+		sd->Center=o->GetPosition();
+		sd->Radius=s->mRadius;
+		sd->Meta.Color=s->mColor;
+		ret.push_back(sd);
 	}
 	return ret;
 }

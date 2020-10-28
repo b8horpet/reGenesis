@@ -37,7 +37,7 @@ int main(/*int argc, char** argv*/)
 				Renderer->UpdateData(theWorld.GetRenderData());
 			}
 			theSurface->Present();
-                        FrameMark;
+			FrameMark;
 		}
 	}
 	return 0;

@@ -47,7 +47,7 @@ public:
 		{
 			// should be handled differently
 			// target layer should be passed as a parameter
-			throw "wtf?";
+			throw "Brain neuron register not implemented";
 		}
 	}
 	void FillSynapsisGraph()
