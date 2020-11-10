@@ -72,7 +72,6 @@ void Render_OpenGL::Render()
 			glColor4f(s->Meta.Color[0],s->Meta.Color[1],s->Meta.Color[2],s->Meta.Color[3]);
 			const double r = s->Radius;
 			glBegin(GL_POLYGON);
-			// ignore radius for now
 			for(int i=0; i<40; ++i)
 				glVertex2f(r * circle[i].x, r * circle[i].y);
 			glEnd();
@@ -93,7 +92,7 @@ void Render_OpenGL::UpdateData(std::vector<std::shared_ptr<ObjectData>> r)
 	SharedData=r;
 }	
 
-void Render_OpenGL::MoveOffset(const Vec2& off)
+void Render_OpenGL::MoveOffset(const Vec2d& off)
 {
 	offset -= (off / scale) * .1;
 }
@@ -106,7 +105,7 @@ void Render_OpenGL::ZoomScale(double s)
 void Render_OpenGL::ResetView()
 {
 	scale = default_scale;
-	offset = Vec2{};
+	offset = Vec2d{};
 }
 
 /*#author: b8horpet

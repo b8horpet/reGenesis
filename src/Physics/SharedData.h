@@ -11,11 +11,13 @@ struct Metadata
 	enum ObjectShape
 	{
 		None, // undefined type
+		Point,
+		Line,
 		Sphere,
-		Cube,
+		Box,
 		PolyHedron,
 	} Shape;
-	Vec<4> Color;
+	Clr4d Color;
 	Metadata(ObjectShape s=None) : Shape(s) {}
 };
 
@@ -26,27 +28,39 @@ struct ObjectData
 	virtual ~ObjectData() {}
 };
 
+struct PointData : ObjectData
+{
+	PointData() : ObjectData(Metadata::Point) {}
+	Vec3d Coord;
+};
+
+struct LineData : ObjectData
+{
+	LineData() : ObjectData(Metadata::Line) {}
+	Vec3d Start;
+	Vec3d End;
+};
+
 struct SphereData : ObjectData
 {
 	SphereData() : ObjectData(Metadata::Sphere) {}
-	Vec3 Center;
+	Vec3d Center;
 	double Radius;
 };
 
 // axis aligned
-struct CubeData : ObjectData
+struct BoxData : ObjectData
 {
-	CubeData() : ObjectData(Metadata::Cube) {}
-	Vec3 Center;
-	double Size;
+	BoxData() : ObjectData(Metadata::Box) {}
+	Vec3d TopLeft;
+	Vec3d BottomRight;
 };
 
 struct PolyHedronData : ObjectData
 {
-	// wireframe for now
 	typedef std::pair<size_t,size_t> IndexPair;
 	PolyHedronData() : ObjectData(Metadata::PolyHedron) {}
-	std::vector<Vec3> Vertices;
+	std::vector<Vec3d> Vertices;
 	std::vector<IndexPair> Edges;
 };
 

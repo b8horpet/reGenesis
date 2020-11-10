@@ -1,3 +1,6 @@
 [submodule "tracy"]
 	path = tracy
 	url = https://github.com/wolfpld/tracy.git
+[submodule "b8util"]
+	path = b8util
+	url = https://gitlab.com/b8horpet/b8util

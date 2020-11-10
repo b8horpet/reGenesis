@@ -2,6 +2,7 @@
 #ifndef PHYSICS_WORLD_H_INCLUDED
 #define PHYSICS_WORLD_H_INCLUDED
 
+#include "Debug.h"
 #include "Basics.h"
 #include "SharedData.h"
 #include "Object.h"
@@ -35,8 +36,8 @@ private:
 	double mSize;
 	unsigned long mTickCnt;
 #ifdef DEBUG
-	Vec3 tkp;
-	Vec3 dtkp;
+	Vec3d tkp;
+	Vec3d dtkp;
 #endif
 
 public:

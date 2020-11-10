@@ -53,34 +53,12 @@ void World::TileGeometry::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 		{
 			Vec<2,long long> corner{t.mCoord.first+additional['x'], t.mCoord.second+additional['y']};
 			corner*=mTileSize;
-			if((Vec3{(double)corner[0],(double)corner[1],0}-o->mPosition).Length() < o->mRadius)
+			if((Vec3d{(double)corner[0],(double)corner[1],0}-o->mPosition).Length() < o->mRadius)
 			{
 				// ermagherd it's sooo bad!!!
 				GetTile(corner[0]+additional['x']*2-1,corner[1]+additional['y']*2-1).AddObject(o);
 			}
 		}
-		/*
-		   additional={}
-		   if t.x*self.TileSize>o.Pos.x-o.Radius:
-		   self.GetTile(o.Pos.x-o.Radius,o.Pos.y).AddObject(o)
-		   additional['x']=0
-		   if (t.x+1)*self.TileSize<o.Pos.x+o.Radius:
-		   self.GetTile(o.Pos.x+o.Radius,o.Pos.y).AddObject(o)
-		   additional['x']=1
-		   if t.y*self.TileSize>o.Pos.y-o.Radius:
-		   self.GetTile(o.Pos.x,o.Pos.y-o.Radius).AddObject(o)
-		   additional['y']=0
-		   if (t.y+1)*self.TileSize<o.Pos.y+o.Radius:
-		   self.GetTile(o.Pos.x,o.Pos.y+o.Radius).AddObject(o)
-		   additional['y']=1
-		   if len(additional) == 2:
-		   corner=Vector3D(t.x+additional['x'],t.y+additional['y'])
-		   corner*=self.TileSize
-		   if abs(corner-o.Pos)<o.Radius:
-		   cx=corner.x+additional['x']*2-1
-		   cy=corner.y+additional['y']*2-1
-		   self.GetTile(cx,cy).AddObject(o)
-		   */
 	}
 }
 

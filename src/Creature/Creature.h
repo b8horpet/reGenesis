@@ -30,7 +30,7 @@ public:
 	std::vector<std::shared_ptr<Organ>> mOrgans;
 	std::shared_ptr<Brain> mBrain;
 
-	Creature(Vec3 p=Vec3())
+	Creature(Vec3d p=Vec3d())
 		: Sphere(p)
 		, mRandom(mID)
 		, mEnergy(300.0)
@@ -179,7 +179,7 @@ class Food : public Sphere
 protected:
 	double mNutrient;
 public:
-	Food(Vec3 p=Vec3())
+	Food(Vec3d p=Vec3d())
 		: Sphere(p)
 		, mNutrient(200.0)
 	{
@@ -212,7 +212,7 @@ class Obstacle : public Sphere
 protected:
 	double mDamage;
 public:
-	Obstacle(Vec3 p=Vec3())
+	Obstacle(Vec3d p=Vec3d())
 		: Sphere(p)
 		, mDamage(10.0)
 	{
