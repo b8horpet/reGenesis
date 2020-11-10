@@ -14,7 +14,7 @@ class IRenderer
 public:
 	virtual ~IRenderer() {}
 	virtual void Render() = 0;
-	virtual void UpdateData(std::vector<std::shared_ptr<ObjectData>>) = 0;
+	virtual void UpdateData(const RenderData&) = 0;
 	virtual void MoveOffset(const Vec2d&) {}
 	virtual void ZoomScale(double) {}
 	virtual void ResetView() {}

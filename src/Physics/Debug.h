@@ -20,12 +20,13 @@ private:
 };
 #define MEASURE() timer_helper t##__LINE__(__FUNCTION__)
 
-struct DebugDrawer
+struct DebugDrawer : public Singleton<DebugDrawer>
 {
-	std::vector<std::shared_ptr<ObjectData>> GetData() const;
+	void FillRenderData(RenderData& renderData);
 	void DrawPoint(const Vec3d& p);
 	void DrawLine(const Vec3d& p1, const Vec3d& p2);
 	void DrawCircle(const Vec3d& p, double r);
+	void DrawBox(const Vec3d& tl, const Vec3d& br);
 	void Clear();
 };
 

@@ -149,7 +149,7 @@ public:
 	virtual void Logic();
 	virtual void Spawn();
 	virtual void Activate();
-	virtual std::vector<std::shared_ptr<ObjectData>> GetRenderData();
+	virtual void FillRenderData(RenderData& renderData);
 };
 
 #endif

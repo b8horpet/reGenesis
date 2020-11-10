@@ -1,4 +1,5 @@
 #include "Debug.h"
+#include "SharedData.h"
 #include <cstring>
 
 #include <cstdarg>
@@ -38,3 +39,30 @@ timer_helper::~timer_helper()
 	DEBUG_LOG("%s %f ms",name.c_str(), std::chrono::duration<double, std::milli>(stop - start).count());
 }
 
+// no threading yet
+RenderData g_debug_data;
+
+void DebugDrawer::FillRenderData(RenderData& renderData)
+{
+	renderData.insert(renderData.end(), g_debug_data.begin(), g_debug_data.end());
+}
+void DebugDrawer::DrawPoint(const Vec3d& p)
+{
+	g_debug_data.emplace_back(std::shared_ptr<ObjectData>(new PointData(p)));
+}
+void DebugDrawer::DrawLine(const Vec3d& p1, const Vec3d& p2)
+{
+	g_debug_data.emplace_back(std::shared_ptr<ObjectData>(new LineData(p1, p2)));
+}
+void DebugDrawer::DrawCircle(const Vec3d& p, double r)
+{
+	g_debug_data.emplace_back(std::shared_ptr<ObjectData>(new SphereData(p, r)));
+}
+void DebugDrawer::DrawBox(const Vec3d& tl, const Vec3d& br)
+{
+	g_debug_data.emplace_back(std::shared_ptr<ObjectData>(new BoxData(tl, br)));
+}
+void DebugDrawer::Clear()
+{
+	g_debug_data.clear();
+}

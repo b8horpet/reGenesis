@@ -1,3 +1,7 @@
+#define B8_UTIL_IMPL
+#include "b8.hpp"
+#undef B8_UTIL_IMPL
+
 #include "Physics/World.h"
 #include "Graphics/SurfaceCommon/ISurface.h"
 #include "Graphics/Renderers/IRenderer.h"
@@ -131,7 +135,10 @@ int main(int argc, char* argv[])
 			IRenderer* Renderer=theSurface->GetRenderer();
 			if(Renderer)
 			{
-				Renderer->UpdateData(theWorld.GetRenderData());
+                RenderData render_data;
+                theWorld.FillRenderData(render_data);
+                DebugDrawer::Get().FillRenderData(render_data);
+				Renderer->UpdateData(render_data);
 			}
 			theSurface->Present();
         }

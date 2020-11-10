@@ -1,4 +1,9 @@
+#define B8_UTIL_IMPL
+#include "b8.hpp"
+#undef B8_UTIL_IMPL
+
 #include <stdio.h>
+#include "Physics/SharedData.h"
 #include "Physics/World.h"
 #include "Creature/Creature.h"
 #include "Graphics/SurfaceCommon/ISurface.h"
@@ -39,7 +44,9 @@ int main(int argc, char** argv)
 			IRenderer* Renderer=theSurface->GetRenderer();
 			if(Renderer)
 			{
-				Renderer->UpdateData(theWorld.GetRenderData());
+				RenderData render_data;
+				theWorld.FillRenderData(render_data);
+				Renderer->UpdateData(render_data);
 			}
 			theSurface->Present();
 			FrameMark;
