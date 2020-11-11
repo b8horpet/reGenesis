@@ -114,11 +114,11 @@ int main(int argc, char* argv[])
     //         theWorld.AddObject(std::make_shared<Boid>(Vec3d{x,y,0}));
     //     }
     theWorld.AddObject(std::make_shared<Void>(grav_center));
-    const double random_noise = std::sqrt(N)*2.0;
+    const double random_noise = std::sqrt(N)*10.0;
     std::uniform_real_distribution<> dis(-random_noise, random_noise);
     for(int i=0; i<N; i++)
     {
-        theWorld.AddObject(std::make_shared<Boid>(Vec3d{dis(gen),dis(gen),/*dis(gen)*/0}));
+        theWorld.AddObject(std::make_shared<Boid>(Vec3d{dis(gen),dis(gen),dis(gen)/*0*/}));
     }
     theSurface=CreateSurface("SDL2");
     }
