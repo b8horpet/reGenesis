@@ -90,6 +90,38 @@ public:
 	class Geometry_RDC : public IGeometry
 	{
 	public:
+		struct DimDesc
+		{
+			DimDesc(double n, double x) : Min(n), Max(x) {}
+			DimDesc() : DimDesc(0.0, 0.0) {}
+			double Min, Max;
+			DimDesc(const DimDesc&) = default;
+			DimDesc(DimDesc&&) = default;
+			DimDesc& operator=(const DimDesc&) = default;
+			DimDesc& operator=(DimDesc&&) = default;
+		};
+		template<int D>
+		struct Cluster
+		{
+			std::vector<std::shared_ptr<Object>> objects;
+			std::array<DimDesc, D> limits;
+			std::array<bool, D> dirty;
+			Cluster(const std::vector<std::shared_ptr<Object>>& o, const std::array<DimDesc, D>& l)
+				: objects(o)
+				, limits(l)
+				, dirty{}
+			{
+				for(int i=0; i<D; ++i) dirty[i]=true;
+			}
+			Cluster() : objects{}, limits{}, dirty{}
+			{
+				for(int i=0; i<D; ++i) dirty[i]=true;
+			}
+			Cluster(const Cluster&) = default;
+			Cluster(Cluster&&) = default;
+			Cluster& operator=(const Cluster&) = default;
+			Cluster& operator=(Cluster&&) = default;
+		};
 		Geometry_RDC()
 			: mClusters()
 		{}
@@ -101,7 +133,7 @@ public:
 			NarrowPhase();
 		}
 	private:
-		std::vector<std::pair<std::vector<std::shared_ptr<Object>>,std::array<std::pair<double,double>,2>>> mClusters;
+		std::vector<Cluster<2>> mClusters;
 		void BroadPhase(std::vector<std::shared_ptr<Object>> os);
 		void NarrowPhase();
 	};

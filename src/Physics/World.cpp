@@ -101,80 +101,66 @@ void World::Geometry_RDC::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 {
 	ZoneScopedN("Geometry_RDC::BroadPhase");
 	mClusters.clear();
-	//std::array<char,2> dimensions={'x','y'}; // why???
-	typedef std::tuple<
-				std::vector<std::shared_ptr<Object>>,
-				std::array<bool,2>,
-				std::array<std::pair<double,double>,2>
-			> clusterfuck_t;
-	std::vector<clusterfuck_t> dirtyClusters;
-	clusterfuck_t t;
-	std::get<0>(t)=os;
-	std::get<1>(t)[0]=true;
-	std::get<1>(t)[1]=true;
-	std::get<2>(t)[0]=std::make_pair(0.,0.);
-	std::get<2>(t)[1]=std::make_pair(0.,0.);
-
-	dirtyClusters.push_back(t);
+	decltype(mClusters) dirtyClusters(1);
+	auto& t = dirtyClusters.back();
+	t.objects=os;
+	for(int i=0; i<2; i++)
+	{
+		t.dirty[i]=true;
+		auto& l = t.limits[i];
+		l.Min = l.Max = 0.0;
+	}
 	int dim=0;
 	while(!dirtyClusters.empty())
 	{
-		//char dc=dimensions[dim];
 		for(int i=dirtyClusters.size(); i-->0;)
 		{
 			auto c=dirtyClusters.back();
 			dirtyClusters.pop_back();
-			auto& c1=std::get<1>(c);
-			if(std::find(c1.begin(),c1.end(),true)==c1.end())
+			if(std::find(c.dirty.begin(),c.dirty.end(),true)==c.dirty.end())
 			{
-				mClusters.push_back(std::make_pair(std::get<0>(c),std::get<2>(c)));
+				mClusters.push_back(c);
 				continue;
 			}
-			auto& c0=std::get<0>(c);
-			std::sort(c0.begin(),c0.end(),[dim](const auto& a, const auto& b){return a->GetPosition()[dim] < b->GetPosition()[dim];});
-			double maxD=c0[0]->GetBoundingBox().second[dim];
-			double minD=c0[0]->GetBoundingBox().first[dim];
-			std::vector<std::pair<int,std::pair<double,double>>> ClusterBoundaries;
-			for(long j=0; j<(long)c0.size(); ++j)
+			std::sort(c.objects.begin(),c.objects.end(),[dim](const auto& a, const auto& b){return a->GetBoundingBox().first[dim] < b->GetBoundingBox().first[dim];});
+			const auto& bb0 = c.objects[0]->GetBoundingBox();
+			DimDesc limits{bb0.first[dim], bb0.second[dim]};
+			std::vector<std::pair<int,DimDesc>> ClusterBoundaries;
+			for(long j=1; j<(long)c.objects.size(); ++j)
 			{
-				auto o=c0[j];
-				auto bb = o->GetBoundingBox();
-				double od_r=bb.second[dim];
-				double od_l=bb.first[dim];
-				if(od_l > maxD)
+				const auto& o=c.objects[j];
+				const auto& bb = o->GetBoundingBox();
+				const double od_r=bb.second[dim];
+				const double od_l=bb.first[dim];
+				if(od_l > limits.Max)
 				{
-					ClusterBoundaries.push_back(std::make_pair(j,std::make_pair(minD,maxD)));
-					maxD=od_r;
-					minD=od_l;
+					ClusterBoundaries.push_back(std::make_pair(j,limits));
+					limits.Max=od_r;
+					limits.Min=od_l;
 				}
-				else if(od_r > maxD)
+				else if(od_r > limits.Max)
 				{
-					maxD=od_r;
+					limits.Max=od_r;
 				}
 			}
-			auto& c2=std::get<2>(c);
 			if(ClusterBoundaries.empty())
 			{
-				c1[dim]=false;
-				c2[dim].first=minD;
-				c2[dim].second=maxD;
+				c.dirty[dim]=false;
+				c.limits[dim]=limits;
 				dirtyClusters.push_back(c);
 			}
 			else
 			{
-				ClusterBoundaries.push_back(std::make_pair(c0.size(),std::make_pair(minD,maxD)));
+				ClusterBoundaries.push_back(std::make_pair(c.objects.size(),limits));
 				int LastBound=0;
 				for(auto& j : ClusterBoundaries)
 				{
-					clusterfuck_t tmp;
-					auto& tmp0=std::get<0>(tmp);
-					tmp0.insert(tmp0.begin(),c0.begin()+LastBound,c0.begin()+j.first);
-					auto& tmp1=std::get<1>(tmp);
+					decltype(c) tmp;
+					tmp.objects.insert(tmp.objects.begin(),c.objects.begin()+LastBound,c.objects.begin()+j.first);
 					for(int x=0; x<2; ++x)
-						tmp1[x]=x!=dim;
-					auto& tmp2=std::get<2>(tmp);
-					tmp2=c2;
-					tmp2[dim]=j.second;
+						tmp.dirty[x] = (x!=dim);
+					tmp.limits = c.limits;
+					tmp.limits[dim]=j.second;
 					dirtyClusters.push_back(tmp);
 					LastBound=j.first;
 				}
@@ -183,50 +169,6 @@ void World::Geometry_RDC::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 		dim+=1;
 		dim=dim%2;
 	}
-/*
-	self.Clusters=[]
-	#could be done on separate threads
-	dimensions=['x','y'] # only 2 dimension
-	#this is fragile, should be indexed with numbers
-	dirtyClusters=[[os,[True for d in dimensions],[(0,0) for d in dimensions]]]
-	dim=0
-	while dirtyClusters:
-		dc=dimensions[dim]
-		#print("pass %s %d" % (dc,len(dirtyClusters)))
-		for i in reversed(range(len(dirtyClusters))):
-			c=dirtyClusters.pop(i)
-			if True not in c[1]:
-				self.Clusters.append((c[0],c[2]))
-				continue
-			c[0].sort(key=partial(World.Geometry_RDC.get_pos_by_dim,dc))
-			clusterBoundaries=[]
-			maxD=getattr(c[0][0].GetBoundingBox()[1],dc)
-			minD=getattr(c[0][0].GetBoundingBox()[0],dc)
-			for j,o in enumerate(c[0]):
-				bb=o.GetBoundingBox()
-				od_r=getattr(bb[1],dc)
-				od_l=getattr(bb[0],dc)
-				if od_l > maxD:
-					clusterBoundaries.append((j,(minD,maxD)))
-					maxD=od_r
-					minD=od_l
-				elif od_r > maxD:
-					maxD=od_r
-			if not clusterBoundaries:
-				c[1][dim]=False
-				c[2][dim]=(minD,maxD)
-				dirtyClusters.append(c)
-			else:
-				clusterBoundaries.append((len(c[0]),(minD,maxD)))
-				lastbound=0
-				for j in clusterBoundaries:
-					currCluster=[c[0][lastbound:j[0]],[x!=dim for x in range(len(dimensions))],[i for i in c[2]]]
-					currCluster[2][dim]=j[1]
-					dirtyClusters.append(currCluster)
-					lastbound=j[0]
-		dim+=1
-		dim%=len(dimensions)
-*/
 }
 
 void World::Geometry_RDC::NarrowPhase()
@@ -236,13 +178,13 @@ void World::Geometry_RDC::NarrowPhase()
 	auto& dd = DebugDrawer::Get();
 	for( auto& cl : mClusters)
 	{
-		dd.DrawBox(Vec3d{cl.second[0].first, cl.second[1].first, 0.0}, Vec3d{cl.second[0].second, cl.second[1].second, 0.0});
-		for(size_t i=0; i<cl.first.size()-1; ++i)
-			for(size_t j=i+1; j<cl.first.size(); ++j)
-						if(cl.first[i]->Collide(cl.first[j].get()))
+		dd.DrawBox(Vec3d{cl.limits[0].Min, cl.limits[1].Min, 0.0}, Vec3d{cl.limits[0].Max, cl.limits[1].Max, 0.0});
+		for(size_t i=0; i<cl.objects.size()-1; ++i)
+			for(size_t j=i+1; j<cl.objects.size(); ++j)
+						if(cl.objects[i]->Collide(cl.objects[j].get()))
 						{
-							dd.DrawLine(cl.first[i]->GetPosition(), cl.first[j]->GetPosition());
-							colls.insert(std::make_pair(cl.first[i].get(),cl.first[j].get()));
+							dd.DrawLine(cl.objects[i]->GetPosition(), cl.objects[j]->GetPosition());
+							colls.insert(std::make_pair(cl.objects[i].get(),cl.objects[j].get()));
 						}
 	}
 	typedef std::pair<Object*,std::shared_ptr<PhysEffect>> objeff;
