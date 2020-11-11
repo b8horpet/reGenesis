@@ -4,13 +4,82 @@
 
 bool g_Paused = false;
 
-World::TileGeometry::Tile& World::TileGeometry::GetTile(double x, double y)
+World::TileGeometry::Tile& World::TileGeometry::GetTile(std::array<double, World::TileGeometry::dimensions> coord)
 {
-	std::pair<long long,long long> c((long long)(floor(x/double(mTileSize))),(long long)(floor(y/double(mTileSize))));
+	std::array<long long, World::TileGeometry::dimensions> c;
+	for(int i=0; i<World::TileGeometry::dimensions; ++i)
+	{
+		c[i] = (long long)floor(coord[i]/double(mTileSize));
+	}
 	if(mTiles.count(c)==0)
-		mTiles.emplace(std::make_pair(c,Tile(c.first,c.second)));
+		mTiles.emplace(std::make_pair(c,Tile(c)));
 	return mTiles.at(c);
 }
+
+template<typename T, int D>
+struct possibilities
+{
+private:
+	std::array<T, D> const *first, *second;
+	std::array<int, D+1> limit, counter;
+	possibilities(std::array<T, D> const *f, std::array<T, D> const *s, const std::array<int, D+1>& l)
+		: first{f}, second{s}
+		, limit{l}, counter{}
+	{}
+public:
+	possibilities(std::array<T, D> const *f, std::array<T, D> const *s, const std::array<int, D>& l)
+		: first{f}, second{s}
+		, limit{}, counter{}
+	{
+		for(int i=0; i<D; ++i)
+			limit[i] = l[i];
+		limit[D] = 1;
+	}
+	possibilities& operator++()
+	{
+		for(int i=0; i<D+1; ++i)
+		{
+			if(counter[i] < limit[i])
+			{
+				counter[i]++;
+				return *this;
+			}
+			counter[i]=0;
+		}
+		return *this;
+	}
+	bool operator==(const possibilities& rhs) const
+	{
+		return limit == rhs.limit && counter == rhs.counter;
+	}
+	bool operator!=(const possibilities& rhs) const
+	{
+		return !(*this == rhs);
+	}
+	std::array<T, D> operator*() const
+	{
+		std::array<T, D> ret = *first;
+		for(int i=0; i<D; ++i)
+		{
+			if(counter[i] == 1)
+			{
+				ret[i] = (*second)[i];
+			}
+		}
+		return ret;
+	}
+	possibilities<T,D> begin() const
+	{
+		possibilities<T,D> ret{first, second, limit};
+		return ret;
+	}
+	possibilities<T,D> end() const
+	{
+		possibilities<T,D> ret{first, second, limit};
+		ret.counter[D] = 1;
+		return ret;
+	}
+};
 
 void World::TileGeometry::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 {
@@ -22,43 +91,21 @@ void World::TileGeometry::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 		Sphere* o = dynamic_cast<Sphere*>(obj.get());
 		max_radius = std::max(o->mRadius, max_radius);
 	}
-	mTileSize = (long long)(std::floor(max_radius * 2.0 + 0.5)) + 1ll;
-	for( auto obj : os)
+	mTileSize = (long long)(std::floor(max_radius * 2.0)) + 1ll;
+	for( auto& o : os)
 	{
-		Sphere* o = dynamic_cast<Sphere*>(obj.get());
-		Tile& t = GetTile(o->mPosition[0],o->mPosition[1]);
-		t.AddObject(o);
-		// here comes the fugly part
-		std::map<char,int> additional;
-		if (t.mCoord.first * mTileSize > o->mPosition[0] - o->mRadius)
+		auto* obj = o.get();
+		const auto& bb = o->GetBoundingBox();
+		Tile& t = GetTile(bb.first.Data());
+		std::array<int, World::TileGeometry::dimensions> next;
+		for(int i=0; i<World::TileGeometry::dimensions; ++i)
 		{
-			GetTile(o->mPosition[0] - o->mRadius, o->mPosition[1]).AddObject(o);
-			additional['x']=0;
+			next[i] = (t.mCoord[i] + 1) * mTileSize < bb.second[i] ? 1 : 0;
 		}
-		if ((t.mCoord.first+1) * mTileSize < o->mPosition[0] + o->mRadius)
+		possibilities<double, World::TileGeometry::dimensions> poss{&bb.first.Data(), &bb.second.Data(), next};
+		for(const auto& p : poss)
 		{
-			GetTile(o->mPosition[0] + o->mRadius, o->mPosition[1]).AddObject(o);
-			additional['x']=1;
-		}
-		if (t.mCoord.second * mTileSize > o->mPosition[1] - o->mRadius)
-		{
-			GetTile(o->mPosition[0], o->mPosition[1] - o->mRadius).AddObject(o);
-			additional['y']=0;
-		}
-		if ((t.mCoord.second+1) * mTileSize < o->mPosition[1] + o->mRadius)
-		{
-			GetTile(o->mPosition[0], o->mPosition[1] + o->mRadius).AddObject(o);
-			additional['y']=1;
-		}
-		if(additional.size() == 2)
-		{
-			Vec<2,long long> corner{t.mCoord.first+additional['x'], t.mCoord.second+additional['y']};
-			corner*=mTileSize;
-			if((Vec3d{(double)corner[0],(double)corner[1],0}-o->mPosition).Length() < o->mRadius)
-			{
-				// ermagherd it's sooo bad!!!
-				GetTile(corner[0]+additional['x']*2-1,corner[1]+additional['y']*2-1).AddObject(o);
-			}
+			GetTile(p).AddObject(obj);
 		}
 	}
 }
@@ -71,8 +118,8 @@ void World::TileGeometry::NarrowPhase()
 	for( auto p : mTiles)
 	{
 		dd.DrawBox(
-			Vec3d{double(p.first.first * mTileSize), double(p.first.second * mTileSize), 0.0},
-			Vec3d{double((p.first.first+1ll) * mTileSize), double((p.first.second+1ll) * mTileSize), 0.0});
+			Vec3d{double(p.first[0] * mTileSize), double(p.first[1] * mTileSize), 0.0},
+			Vec3d{double((p.first[0]+1ll) * mTileSize), double((p.first[1]+1ll) * mTileSize), 0.0});
 		auto c=p.second.Collide();
 		for(auto& ci : c)
 		{
@@ -101,10 +148,10 @@ void World::Geometry_RDC::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 {
 	ZoneScopedN("Geometry_RDC::BroadPhase");
 	mClusters.clear();
-	decltype(mClusters) dirtyClusters(1);
+	decltype(mClusters) dirtyClusters(1), dirtyswap;
 	auto& t = dirtyClusters.back();
 	t.objects=os;
-	for(int i=0; i<2; i++)
+	for(int i=0; i<dimensions; i++)
 	{
 		t.dirty[i]=true;
 		auto& l = t.limits[i];
@@ -113,15 +160,10 @@ void World::Geometry_RDC::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 	int dim=0;
 	while(!dirtyClusters.empty())
 	{
-		for(int i=dirtyClusters.size(); i-->0;)
+		while(!dirtyClusters.empty())
 		{
 			auto c=dirtyClusters.back();
 			dirtyClusters.pop_back();
-			if(std::find(c.dirty.begin(),c.dirty.end(),true)==c.dirty.end())
-			{
-				mClusters.push_back(c);
-				continue;
-			}
 			std::sort(c.objects.begin(),c.objects.end(),[dim](const auto& a, const auto& b){return a->GetBoundingBox().first[dim] < b->GetBoundingBox().first[dim];});
 			const auto& bb0 = c.objects[0]->GetBoundingBox();
 			DimDesc limits{bb0.first[dim], bb0.second[dim]};
@@ -147,7 +189,12 @@ void World::Geometry_RDC::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 			{
 				c.dirty[dim]=false;
 				c.limits[dim]=limits;
-				dirtyClusters.push_back(c);
+				if(std::find(c.dirty.begin(),c.dirty.end(),true)==c.dirty.end())
+				{
+					mClusters.push_back(c);
+					continue;
+				}
+				dirtyswap.push_back(c);
 			}
 			else
 			{
@@ -157,17 +204,18 @@ void World::Geometry_RDC::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 				{
 					decltype(c) tmp;
 					tmp.objects.insert(tmp.objects.begin(),c.objects.begin()+LastBound,c.objects.begin()+j.first);
-					for(int x=0; x<2; ++x)
+					for(int x=0; x<dimensions; ++x)
 						tmp.dirty[x] = (x!=dim);
 					tmp.limits = c.limits;
 					tmp.limits[dim]=j.second;
-					dirtyClusters.push_back(tmp);
+					dirtyswap.push_back(tmp);
 					LastBound=j.first;
 				}
 			}
 		}
+		std::swap(dirtyClusters, dirtyswap);
 		dim+=1;
-		dim=dim%2;
+		dim=dim%dimensions;
 	}
 }
 

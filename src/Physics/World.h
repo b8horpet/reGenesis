@@ -45,16 +45,17 @@ public:
 
 	class TileGeometry : public IGeometry
 	{
+		constexpr static int dimensions = 3;
 	public:
 		struct Tile
 		{
 		private:
 			Tile();
 		public:
-			std::pair<long long,long long> mCoord;
+			std::array<long long, dimensions> mCoord;
 			//std::vector<std::weak_ptr<Object>> mObjects;
 			std::vector<Object*> mObjects;
-			Tile(long long x, long long y) : mCoord(x,y) {}
+			Tile(const std::array<long long, dimensions>& c) : mCoord(c) {}
 			void AddObject(Object* o)
 			{
 				for(auto x : mObjects)
@@ -82,13 +83,14 @@ public:
 		}
 		long long mTileSize;
 	private:
-		std::map<std::pair<long long,long long>,Tile> mTiles;
-		Tile& GetTile(double x, double y);
+		std::map<std::array<long long,dimensions>,Tile> mTiles;
+		Tile& GetTile(std::array<double,dimensions> c);
 		void BroadPhase(std::vector<std::shared_ptr<Object>> os);
 		void NarrowPhase();
 	};
 	class Geometry_RDC : public IGeometry
 	{
+		constexpr static int dimensions = 3;
 	public:
 		struct DimDesc
 		{
@@ -133,7 +135,7 @@ public:
 			NarrowPhase();
 		}
 	private:
-		std::vector<Cluster<2>> mClusters;
+		std::vector<Cluster<dimensions>> mClusters;
 		void BroadPhase(std::vector<std::shared_ptr<Object>> os);
 		void NarrowPhase();
 	};

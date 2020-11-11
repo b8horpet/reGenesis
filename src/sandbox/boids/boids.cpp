@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
         fprintf(stderr, "cannot convert '%s' to integer\n", argv[1]);
         return 1;
     }
-    N = std::min(std::max(N, 1l), 1000l);
+    N = std::min(std::max(N, 1l), 10000l);
     printf("N= %ld\n", N);
     GravWorld theWorld(argc > 2 ? argv[2] : "");
     std::unique_ptr<ISurface> theSurface;
@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
     //         theWorld.AddObject(std::make_shared<Boid>(Vec3d{x,y,0}));
     //     }
     theWorld.AddObject(std::make_shared<Void>(grav_center));
-    const double random_noise = std::sqrt(N)*10.0;
+    const double random_noise = std::sqrt(N)*2.0;
     std::uniform_real_distribution<> dis(-random_noise, random_noise);
     for(int i=0; i<N; i++)
     {
