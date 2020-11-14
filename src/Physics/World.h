@@ -46,7 +46,6 @@ public:
 	class TileGeometry : public IGeometry
 	{
 		constexpr static int dimensions = 3;
-	public:
 		struct Tile
 		{
 		private:
@@ -72,6 +71,7 @@ public:
 				return colls;
 			}
 		};
+	public:
 		virtual ~TileGeometry(){}
 		TileGeometry()
 			: mTileSize(0)
@@ -91,7 +91,6 @@ public:
 	class Geometry_RDC : public IGeometry
 	{
 		constexpr static int dimensions = 3;
-	public:
 		struct DimDesc
 		{
 			DimDesc(double n, double x) : Min(n), Max(x) {}
@@ -124,6 +123,7 @@ public:
 			Cluster& operator=(const Cluster&) = default;
 			Cluster& operator=(Cluster&&) = default;
 		};
+	public:
 		Geometry_RDC()
 			: mClusters()
 		{}
@@ -149,13 +149,17 @@ public:
 		, mTickCnt(0)
 		, mGeometry()
 	{
-		if(geometry == "RDC" || geometry == "" /*default*/)
+		if(geometry == "tile" || geometry == "" /*default*/)
 		{
-			mGeometry.reset(new Geometry_RDC());
+			mGeometry.reset(new TileGeometry);
 		}
-		else if(geometry == "tile")
+		else if(geometry == "RDC")
 		{
-			mGeometry.reset(new TileGeometry());
+			mGeometry.reset(new Geometry_RDC);
+		}
+		else if(geometry == "KDTree")
+		{
+			mGeometry.reset(new Geometry_2DT);
 		}
 		else
 		{

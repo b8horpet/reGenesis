@@ -23,6 +23,7 @@ private:
 struct DebugDrawer : public Singleton<DebugDrawer>
 {
 	void FillRenderData(RenderData& renderData);
+	void SetColor(const Clr4d& c);
 	void DrawPoint(const Vec3d& p);
 	void DrawLine(const Vec3d& p1, const Vec3d& p2);
 	void DrawCircle(const Vec3d& p, double r);

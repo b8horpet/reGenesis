@@ -113,12 +113,12 @@ int main(int argc, char* argv[])
     //         if(x == 0 && y == 0) continue;
     //         theWorld.AddObject(std::make_shared<Boid>(Vec3d{x,y,0}));
     //     }
-    theWorld.AddObject(std::make_shared<Void>(grav_center));
+    // theWorld.AddObject(std::make_shared<Void>(grav_center));
     const double random_noise = std::sqrt(N)*2.0;
     std::uniform_real_distribution<> dis(-random_noise, random_noise);
     for(int i=0; i<N; i++)
     {
-        theWorld.AddObject(std::make_shared<Boid>(Vec3d{dis(gen),dis(gen),dis(gen)/*0*/}));
+        theWorld.AddObject(std::make_shared<Boid>(Vec3d{dis(gen),dis(gen),/*dis(gen)*/0}));
     }
     theSurface=CreateSurface("SDL2");
     }
@@ -129,6 +129,7 @@ int main(int argc, char* argv[])
     {
         theWorld.Activate();
         if(!g_Paused) ++i;
+        if(i == 1) g_Paused = true;
 		if(theSurface)
 		{
 			ZoneScopedN("render");
