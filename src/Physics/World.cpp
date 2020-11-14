@@ -222,7 +222,7 @@ void World::Geometry_RDC::BroadPhase(std::vector<std::shared_ptr<Object>> os)
 void World::Geometry_RDC::NarrowPhase()
 {
 	ZoneScopedN("Geometry_RDC::NarrowPhase");
-	std::set<std::pair<Object*,Object*>> colls;
+	std::vector<std::pair<Object*,Object*>> colls;
 	auto& dd = DebugDrawer::Get();
 	for( auto& cl : mClusters)
 	{
@@ -232,7 +232,7 @@ void World::Geometry_RDC::NarrowPhase()
 						if(cl.objects[i]->Collide(cl.objects[j].get()))
 						{
 							dd.DrawLine(cl.objects[i]->GetPosition(), cl.objects[j]->GetPosition());
-							colls.insert(std::make_pair(cl.objects[i].get(),cl.objects[j].get()));
+							colls.emplace_back(cl.objects[i].get(),cl.objects[j].get());
 						}
 	}
 	typedef std::pair<Object*,std::shared_ptr<PhysEffect>> objeff;

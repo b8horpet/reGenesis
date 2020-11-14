@@ -13,16 +13,6 @@
 #include <locale>
 #include <map>
 
-constexpr int intpow(int b, int e)
-{
-    int ret = 1;
-    for(int i=0; i<e; ++i) ret*=b;
-    return ret;
-}
-
-static bool g_written = false;
-static int g_nodes = 0;
-
 template<typename T, size_t Dimensions>
 class KDTree
 {
@@ -43,6 +33,7 @@ public:
     template<typename Iterator>
     void Insert(Iterator begin, Iterator end);
     void Insert(std::shared_ptr<T> obj);
+    std::vector<std::pair<T*,T*>> GetCollisions() const;
 private:
     struct KDNode
     {
@@ -53,20 +44,19 @@ private:
             assert(cut_position >= 0 && cut_position <= num_objs * 2);
             assert(cut_centerness >= 0.0 && cut_centerness <= 1.0);
             const int remaining_position = num_objs - cut_object - cut_position;
-            return double(std::abs(remaining_position - cut_position)) / double(std::min(remaining_position, cut_position)) + double(cut_object ) /* + cut_centerness*/;
+            return double(std::abs(remaining_position - cut_position)) / double(std::min(remaining_position, cut_position)) + double(cut_object * 2) /* + cut_centerness*/;
         }
-        static constexpr int obj_limit = 11;
+        static constexpr int obj_limit = 10;
         std::vector<std::shared_ptr<T>> mObjs;
         std::array<std::unique_ptr<KDNode>, 2> mChildren;
         int mDivAxis = -1;
         double mDivVal = std::numeric_limits<double>::quiet_NaN();
         void Balance()
         {
-            if(!g_written) g_nodes++;
-            if(mObjs.empty()) return;
+            if(mObjs.size() < obj_limit) return;
+            // if(mObjs.empty()) return;
             auto& dd = DebugDrawer::Get();
             assert(mDivAxis == -1);
-            // if(mObjs.size() < obj_limit) return;
             std::vector<std::pair<Vec3d, int8_t>> bb_vec;
             bb_vec.reserve(mObjs.size());
             for(const auto& o : mObjs)
@@ -127,9 +117,8 @@ private:
                 ddmax[i] = Max[i];
             }
             dd.DrawBox(ddmin,ddmax);
-            if(mObjs.size() < obj_limit) return;
+            // if(mObjs.size() < obj_limit) return;
             double best_penalty = Penalty(objsize, objsize, 0.0, mObjs.size());
-            // megkeressuk a legjobb cut-ot aminek legalacsonyabb a penalty-ja
             for(int dim=0; dim<Dimensions; ++dim)
             {
                 for(const auto& bc : best_cuts_dim[dim])
@@ -138,7 +127,7 @@ private:
                     if(p < best_penalty)
                     {
                         best_penalty = p;
-                        if(!g_written) printf("new best cut %c %d<- %d ->%d score %f\n", dim ? 'y' : 'x', bc.second.first, bc.first, objsize - bc.second.first - bc.first, p);
+                        // printf("new best cut %c %d<- %d ->%d score %f\n", dim ? 'y' : 'x', bc.second.first, bc.first, objsize - bc.second.first - bc.first, p);
                         mDivAxis = dim;
                         mDivVal = bc.second.second;
                     }
@@ -156,66 +145,50 @@ private:
             {
                 c.reset(new KDNode);
             }
-            // szetosztjuk az objektumokat a 2 gyerekbe
-            decltype(mObjs) leftover;
             while(!mObjs.empty())
             {
                 std::shared_ptr<T> obj = mObjs.back();
                 mObjs.pop_back();
                 const auto& bb = obj->GetBoundingBox();
-                if(bb.first[mDivAxis] > mDivVal)
+                if(bb.first[mDivAxis] < mDivVal)
                 {
-                    mChildren[1]->mObjs.push_back(std::move(obj));
+                    mChildren[0]->mObjs.push_back(obj);
                 }
-                else if(bb.second[mDivAxis] < mDivVal)
+                if(bb.second[mDivAxis] > mDivVal)
                 {
-                    mChildren[0]->mObjs.push_back(std::move(obj));
-                }
-                else
-                {
-                    // (jo kerdes, hogy amit szejjelvagunk az mind2-be bekeruljon-e)
-                    // ha fentrol lefele passzolgatjuk az ojjektumokat, amik tesztelesre varnak
-                    leftover.push_back(std::move(obj));
+                    mChildren[1]->mObjs.push_back(obj);
                 }
             }
-            std::swap(mObjs, leftover);
-            ////////////////////DEBUG////////////////////
-            if(!mObjs.empty())
-            {
-            bb_vec.clear();
-            bb_vec.reserve(mObjs.size());
-            for(const auto& o : mObjs)
-            {
-                const auto& bb = o->GetBoundingBox();
-                bb_vec.emplace_back(bb.first, 1);
-                bb_vec.emplace_back(bb.second, -1);
-            }
-            for(int dim=0; dim<Dimensions; ++dim)
-            {
-                std::sort(bb_vec.begin(), bb_vec.end(), [dim](const auto& a, const auto& b)
-                    {
-                        if(a.first[dim] < b.first[dim]) return true;
-                        if(a.first[dim] > b.first[dim]) return false;
-                        return a.second < b.second;
-                    });
-                Min[dim] = bb_vec.front().first[dim];
-                Max[dim] = bb_vec.back().first[dim];
-            }
-            for(int i=0; i<Dimensions; ++i)
-            {
-                ddmin[i] = Min[i];
-                ddmax[i] = Max[i];
-            }
-            dd.SetColor({1.,0.,0.,1.});
-            dd.DrawBox(ddmin,ddmax);
-            dd.SetColor({1.,1.,1.,1.});
-            }
-            ////////////////////DEBUG////////////////////
-            // mind2 gyereket balanszoljuk
             for(auto& c : mChildren)
             {
                 c->Balance();
             }
+        }
+        std::vector<std::pair<T*,T*>> Collide()
+        {
+            std::vector<std::pair<T*,T*>> ret;
+            if(!mObjs.empty())
+            {
+                for(int i=0; i<mObjs.size()-1; ++i)
+                {
+                    const auto& io = mObjs[i].get();
+                    for(int j=i+1; j<mObjs.size(); ++j)
+                    {
+                        const auto& jo = mObjs[j].get();
+                        if(io->Collide(jo))
+                        {
+                            ret.emplace_back(io,jo);
+                        }
+                    }
+                }
+            }
+            if(mDivAxis == -1) return ret;
+            for(const auto& c : mChildren)
+            {
+                auto ch_ret = c->Collide();
+                ret.insert(ret.end(), ch_ret.begin(), ch_ret.end());
+            }
+            return ret;
         }
     };
     std::unique_ptr<KDNode> mRoot;
@@ -225,12 +198,18 @@ template<typename T, size_t D>
 template<typename It>
 void KDTree<T, D>::Create(It begin, It end)
 {
+    ZoneScopedN("Geometry_2DT::BroadPhase");
     mRoot.reset(new KDNode);
     auto& objs = mRoot->mObjs;
     objs.insert(objs.end(), begin, end);
     mRoot->Balance();
-    if(!g_written) printf("%d nodes\n", g_nodes);
-    g_written = true;
+}
+
+template<typename T, size_t D>
+std::vector<std::pair<T*,T*>> KDTree<T, D>::GetCollisions() const
+{
+    ZoneScopedN("Geometry_2DT::NarrowPhase");
+    return mRoot->Collide();
 }
 
 class Geometry_2DT : public KDTree<Object,2>, public IGeometry
@@ -239,7 +218,24 @@ public:
     virtual ~Geometry_2DT() {}
     virtual void DoCollisions(std::vector<std::shared_ptr<Object> > os) override
     {
+        auto& dd = DebugDrawer::Get();
         Create(os.begin(), os.end());
+        auto colls = GetCollisions();
+        typedef std::pair<Object*,std::shared_ptr<PhysEffect>> objeff;
+        typedef std::pair<objeff,objeff> interaction;
+        std::vector<interaction> colleffs;
+        for (auto c : colls)
+        {
+            dd.DrawLine(c.first->GetPosition(), c.second->GetPosition());
+            objeff a(c.first,c.first->DoCollision(c.second));
+            objeff b(c.second,c.second->DoCollision(c.first));
+            colleffs.push_back(interaction(a,b));
+        }
+        for (auto i : colleffs)
+        {
+            i.first.first->DoEffect(i.second.second);
+            i.second.first->DoEffect(i.first.second);
+        }
     }
 };
 
