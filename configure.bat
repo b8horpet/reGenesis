@@ -1,1 +1,1 @@
-cmake -B./build -H./src -A x64
+cmake -DCMAKE_TOOLCHAIN_FILE=E:/prog/vcpkg/scripts/buildsystems/vcpkg.cmake -B./build -H./src -A x64

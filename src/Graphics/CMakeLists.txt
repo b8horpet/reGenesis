@@ -7,37 +7,40 @@ add_library (Graphics ${SOURCES})
 find_package(OpenGL REQUIRED)
 #find_package(GLEW REQUIRED NAME glew)
 if(MSVC)
-	set(GLEW_DIR ${CMAKE_SOURCE_DIR}/../../glew CACHE STRING "Location of the glew diractory")
-	message(STATUS "lofasz: " ${GLEW_DIR})
-	set(GLEW_INCLUDE_DIR ${GLEW_DIR}/include)
-	if(CMAKE_CL_64)
-		set(GLEW_LIBRARY ${GLEW_DIR}/lib/Release/x64/glew32.lib)
-	else()
-		set(GLEW_LIBRARY ${GLEW_DIR}/lib/Release/Win32/glew32.lib)
-	endif()
-
-	set(SDL_DIR ${CMAKE_SOURCE_DIR}/../../sdl CACHE STRING "Location of the SDL directory")
-	if(CMAKE_CL_64)
-		set(SDL_LIBRARY_DIR ${SDL_DIR}/lib/x64 CACHE STRING "Location of the SDL lib directory")
-	else()
-		set(SDL_LIBRARY_DIR ${SDL_DIR}/lib/x86 CACHE STRING "Location of the SDL lib directory")
-	endif()
-	include_directories(${SDL_DIR}/include)
-	set(SDL_LIBRARY
-		${SDL_LIBRARY_DIR}/SDL2.lib
-		${SDL_LIBRARY_DIR}/SDL2main.lib
-	)
-	configure_file(
-		${SDL_LIBRARY_DIR}/SDL2.dll
-		${CMAKE_BINARY_DIR}/SDL2.dll COPYONLY
-	)
+#	set(GLEW_DIR ${CMAKE_SOURCE_DIR}/../../glew CACHE STRING "Location of the glew diractory")
+#	message(STATUS "lofasz: " ${GLEW_DIR})
+#	set(GLEW_INCLUDE_DIR ${GLEW_DIR}/include)
+#	if(CMAKE_CL_64)
+#		set(GLEW_LIBRARY ${GLEW_DIR}/lib/Release/x64/glew32.lib)
+#	else()
+#		set(GLEW_LIBRARY ${GLEW_DIR}/lib/Release/Win32/glew32.lib)
+#	endif()
+#
+#	set(SDL_DIR ${CMAKE_SOURCE_DIR}/../../sdl CACHE STRING "Location of the SDL directory")
+#	if(CMAKE_CL_64)
+#		set(SDL_LIBRARY_DIR ${SDL_DIR}/lib/x64 CACHE STRING "Location of the SDL lib directory")
+#	else()
+#		set(SDL_LIBRARY_DIR ${SDL_DIR}/lib/x86 CACHE STRING "Location of the SDL lib directory")
+#	endif()
+#	include_directories(${SDL_DIR}/include)
+#	set(SDL_LIBRARY
+#		${SDL_LIBRARY_DIR}/SDL2.lib
+#		${SDL_LIBRARY_DIR}/SDL2main.lib
+#	)
+#	configure_file(
+#		${SDL_LIBRARY_DIR}/SDL2.dll
+#		${CMAKE_BINARY_DIR}/SDL2.dll COPYONLY
+#	)
+    find_package(SDL2 CONFIG REQUIRED)
+    find_package(GLEW REQUIRED)
+    target_link_libraries(Graphics ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} GLEW::GLEW SDL2::SDL2main SDL2::SDL2-static)
 else()
 	find_package(GLEW)
     #find_package(SDL2 NAME SDL2 HINTS SDL2)
     find_path(SDL2_INCLUDE_DIR NAME SDL.h HINTS SDL2 PATHS /usr/include/SDL2/)
     find_library(SDL2_LIBRARY NAME SDL2)
     include_directories(${SDL2_INCLUDE_DIR})
+    include_directories(${GLEW_INCLUDE_DIR})
+    find_library(SDL2_LIBRARY NAME SDL2 HINTS SDL2 ${SDL_LIBRARY_DIR})
+    target_link_libraries(Graphics ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${SDL2_LIBRARY} ${GLEW_LIBRARY})
 endif()
-include_directories(${GLEW_INCLUDE_DIR})
-find_library(SDL2_LIBRARY NAME SDL2 HINTS SDL2 ${SDL_LIBRARY_DIR})
-target_link_libraries(Graphics ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${SDL2_LIBRARY} ${GLEW_LIBRARY})
