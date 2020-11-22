@@ -7,13 +7,13 @@ public:
 	virtual ~Render_OpenGL();
 	bool InitGL();
 	virtual void Render() override;
-	virtual void UpdateData(std::vector<std::shared_ptr<ObjectData>> r) override;
-	virtual void MoveOffset(const Vec2&) override;
+	virtual void UpdateData(const RenderData& r) override;
+	virtual void MoveOffset(const Vec2d&) override;
 	virtual void ZoomScale(double) override;
 	virtual void ResetView() override;
 protected:
-	std::vector<std::shared_ptr<ObjectData>> SharedData;
-	Vec2 offset;
+	RenderData SharedData;
+	Vec2d offset;
 	double scale = default_scale;
 	static constexpr double default_scale = 0.1;
 };

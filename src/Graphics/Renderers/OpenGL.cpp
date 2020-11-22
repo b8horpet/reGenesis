@@ -55,26 +55,53 @@ void Render_OpenGL::Render()
 	glLoadIdentity();
 	glScalef(scale,scale,scale);
 	glTranslatef(offset[0], offset[1], 0.0);
-	//glBegin(GL_LINE_LOOP);
 	for(auto& o : SharedData)
 	{
-		//fprintf(stderr,"render element\n");
 		if(!o)
 			continue;
 		glPushMatrix();
 		switch(o->Meta.Shape)
 		{
+		case Metadata::Point:
+		{
+			auto p=std::dynamic_pointer_cast<PointData>(o);
+			glTranslatef(p->Coord->x,p->Coord->y,p->Coord->z);
+			glColor4f(p->Meta.Color->r,p->Meta.Color->g,p->Meta.Color->b,p->Meta.Color->a);
+			glBegin(GL_POINTS);
+				glVertex2f(0.0, 0.0);
+			glEnd();
+		}break;
+		case Metadata::Line:
+		{
+			auto l=std::dynamic_pointer_cast<LineData>(o);
+			glTranslatef(l->Start->x,l->Start->y,l->Start->z);
+			glColor4f(l->Meta.Color->r,l->Meta.Color->g,l->Meta.Color->b,l->Meta.Color->a);
+			glBegin(GL_LINES);
+				glVertex2f(0.0, 0.0);
+                glVertex2f(l->End->x - l->Start->x, l->End->y - l->Start->y);
+			glEnd();
+		}break;
 		case Metadata::Sphere:
 		{
-			//fprintf(stderr,"render sphere\n");
 			auto s=std::dynamic_pointer_cast<SphereData>(o);
 			glTranslatef(s->Center[0],s->Center[1],s->Center[2]);
 			glColor4f(s->Meta.Color[0],s->Meta.Color[1],s->Meta.Color[2],s->Meta.Color[3]);
 			const double r = s->Radius;
 			glBegin(GL_POLYGON);
-			// ignore radius for now
 			for(int i=0; i<40; ++i)
 				glVertex2f(r * circle[i].x, r * circle[i].y);
+			glEnd();
+		}break;
+		case Metadata::Box:
+		{
+			auto b=std::dynamic_pointer_cast<BoxData>(o);
+			glTranslatef(b->TopLeft->x,b->TopLeft->y,b->TopLeft->z);
+			glColor4f(b->Meta.Color->r,b->Meta.Color->g,b->Meta.Color->b,b->Meta.Color->a);
+			glBegin(GL_LINE_LOOP);
+				glVertex2f(0.0, 0.0);
+                glVertex2f(b->BottomRight->x - b->TopLeft->x, 0.0);
+                glVertex2f(b->BottomRight->x - b->TopLeft->x, b->BottomRight->y - b->TopLeft->y);
+                glVertex2f(0.0, b->BottomRight->y - b->TopLeft->y);
 			glEnd();
 		}break;
 		default:
@@ -85,7 +112,7 @@ void Render_OpenGL::Render()
 	}
 }
 
-void Render_OpenGL::UpdateData(std::vector<std::shared_ptr<ObjectData>> r)
+void Render_OpenGL::UpdateData(const RenderData& r)
 {
 	ZoneScoped;
 	//MEASURE();
@@ -93,7 +120,7 @@ void Render_OpenGL::UpdateData(std::vector<std::shared_ptr<ObjectData>> r)
 	SharedData=r;
 }	
 
-void Render_OpenGL::MoveOffset(const Vec2& off)
+void Render_OpenGL::MoveOffset(const Vec2d& off)
 {
 	offset -= (off / scale) * .1;
 }
@@ -106,7 +133,7 @@ void Render_OpenGL::ZoomScale(double s)
 void Render_OpenGL::ResetView()
 {
 	scale = default_scale;
-	offset = Vec2{};
+	offset = Vec2d{};
 }
 
 /*#author: b8horpet

@@ -139,19 +139,19 @@ void Surface_SDL::HandleInput()
 				} break;
 				case SDLK_w:
 				case SDLK_UP:
-					Renderer->MoveOffset(Vec2{0.,1.});
+					Renderer->MoveOffset(Vec2d{0.,1.});
 					break;
 				case SDLK_s:
 				case SDLK_DOWN:
-					Renderer->MoveOffset(Vec2{0.,-1.});
+					Renderer->MoveOffset(Vec2d{0.,-1.});
 					break;
 				case SDLK_a:
 				case SDLK_LEFT:
-					Renderer->MoveOffset(Vec2{-1.,0.});
+					Renderer->MoveOffset(Vec2d{-1.,0.});
 					break;
 				case SDLK_d:
 				case SDLK_RIGHT:
-					Renderer->MoveOffset(Vec2{1.,0.});
+					Renderer->MoveOffset(Vec2d{1.,0.});
 					break;
 				case SDLK_KP_PLUS:
 					Renderer->ZoomScale(.75);

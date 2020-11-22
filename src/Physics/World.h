@@ -2,6 +2,7 @@
 #ifndef PHYSICS_WORLD_H_INCLUDED
 #define PHYSICS_WORLD_H_INCLUDED
 
+#include "Debug.h"
 #include "Basics.h"
 #include "SharedData.h"
 #include "Object.h"
@@ -35,8 +36,8 @@ private:
 	double mSize;
 	unsigned long mTickCnt;
 #ifdef DEBUG
-	Vec3 tkp;
-	Vec3 dtkp;
+	Vec3d tkp;
+	Vec3d dtkp;
 #endif
 
 public:
@@ -44,16 +45,16 @@ public:
 
 	class TileGeometry : public IGeometry
 	{
-	public:
+		constexpr static int dimensions = 3;
 		struct Tile
 		{
 		private:
 			Tile();
 		public:
-			std::pair<long long,long long> mCoord;
+			std::array<long long, dimensions> mCoord;
 			//std::vector<std::weak_ptr<Object>> mObjects;
 			std::vector<Object*> mObjects;
-			Tile(long long x, long long y) : mCoord(x,y) {}
+			Tile(const std::array<long long, dimensions>& c) : mCoord(c) {}
 			void AddObject(Object* o)
 			{
 				for(auto x : mObjects)
@@ -70,6 +71,7 @@ public:
 				return colls;
 			}
 		};
+	public:
 		virtual ~TileGeometry(){}
 		TileGeometry()
 			: mTileSize(0)
@@ -81,13 +83,46 @@ public:
 		}
 		long long mTileSize;
 	private:
-		std::map<std::pair<long long,long long>,Tile> mTiles;
-		Tile& GetTile(double x, double y);
+		std::map<std::array<long long,dimensions>,Tile> mTiles;
+		Tile& GetTile(std::array<double,dimensions> c);
 		void BroadPhase(std::vector<std::shared_ptr<Object>> os);
 		void NarrowPhase();
 	};
 	class Geometry_RDC : public IGeometry
 	{
+		constexpr static int dimensions = 3;
+		struct DimDesc
+		{
+			DimDesc(double n, double x) : Min(n), Max(x) {}
+			DimDesc() : DimDesc(0.0, 0.0) {}
+			double Min, Max;
+			DimDesc(const DimDesc&) = default;
+			DimDesc(DimDesc&&) = default;
+			DimDesc& operator=(const DimDesc&) = default;
+			DimDesc& operator=(DimDesc&&) = default;
+		};
+		template<int D>
+		struct Cluster
+		{
+			std::vector<std::shared_ptr<Object>> objects;
+			std::array<DimDesc, D> limits;
+			std::array<bool, D> dirty;
+			Cluster(const std::vector<std::shared_ptr<Object>>& o, const std::array<DimDesc, D>& l)
+				: objects(o)
+				, limits(l)
+				, dirty{}
+			{
+				for(int i=0; i<D; ++i) dirty[i]=true;
+			}
+			Cluster() : objects{}, limits{}, dirty{}
+			{
+				for(int i=0; i<D; ++i) dirty[i]=true;
+			}
+			Cluster(const Cluster&) = default;
+			Cluster(Cluster&&) = default;
+			Cluster& operator=(const Cluster&) = default;
+			Cluster& operator=(Cluster&&) = default;
+		};
 	public:
 		Geometry_RDC()
 			: mClusters()
@@ -100,7 +135,7 @@ public:
 			NarrowPhase();
 		}
 	private:
-		std::vector<std::pair<std::vector<std::shared_ptr<Object>>,std::array<std::pair<double,double>,2>>> mClusters;
+		std::vector<Cluster<dimensions>> mClusters;
 		void BroadPhase(std::vector<std::shared_ptr<Object>> os);
 		void NarrowPhase();
 	};
@@ -114,13 +149,17 @@ public:
 		, mTickCnt(0)
 		, mGeometry()
 	{
-		if(geometry == "RDC" || geometry == "" /*default*/)
+		if(geometry == "tile" || geometry == "" /*default*/)
 		{
-			mGeometry.reset(new Geometry_RDC());
+			mGeometry.reset(new TileGeometry);
 		}
-		else if(geometry == "tile")
+		else if(geometry == "RDC")
 		{
-			mGeometry.reset(new TileGeometry());
+			mGeometry.reset(new Geometry_RDC);
+		}
+		else if(geometry == "KDTree")
+		{
+			mGeometry.reset(new Geometry_2DT);
 		}
 		else
 		{
@@ -148,7 +187,7 @@ public:
 	virtual void Logic();
 	virtual void Spawn();
 	virtual void Activate();
-	virtual std::vector<std::shared_ptr<ObjectData>> GetRenderData();
+	virtual void FillRenderData(RenderData& renderData);
 };
 
 #endif

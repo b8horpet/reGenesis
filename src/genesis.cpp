@@ -1,4 +1,9 @@
+#define B8_UTIL_IMPL
+#include "b8.hpp"
+#undef B8_UTIL_IMPL
+
 #include <stdio.h>
+#include "Physics/SharedData.h"
 #include "Physics/World.h"
 #include "Creature/Creature.h"
 #include "Graphics/SurfaceCommon/ISurface.h"
@@ -18,11 +23,11 @@ int main(int argc, char** argv)
 	ZoneScopedN("init")
 	for(int i=0; i<5; ++i)
 		for(int j=0; j<=i; ++j)
-			theWorld.AddObject(std::make_shared<Sphere>(Vec3{double(j*2)-double(i),-double(i*2)*sqrt(3.0)/2.0,0}));
+			theWorld.AddObject(std::make_shared<Sphere>(Vec3d{double(j*2)-double(i),-double(i*2)*sqrt(3.0)/2.0,0}));
 	}
-	//auto c=std::make_shared<Sphere>(Vec3{10,10,0});
-	auto c = std::make_shared<Creature>(Vec3{ 10,10,0 });
-	c->mVelocity=Vec3{-.6,-.72,0};
+	//auto c=std::make_shared<Sphere>(Vec3d{10,10,0});
+	auto c = std::make_shared<Creature>(Vec3d{ 10,10,0 });
+	c->mVelocity=Vec3d{-.6,-.72,0};
 	theWorld.AddObject(c);
 	auto theSurface=CreateSurface("SDL2");
 	printf("reGenesis\n");
@@ -39,7 +44,9 @@ int main(int argc, char** argv)
 			IRenderer* Renderer=theSurface->GetRenderer();
 			if(Renderer)
 			{
-				Renderer->UpdateData(theWorld.GetRenderData());
+				RenderData render_data;
+				theWorld.FillRenderData(render_data);
+				Renderer->UpdateData(render_data);
 			}
 			theSurface->Present();
 			FrameMark;
